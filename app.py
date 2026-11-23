@@ -4,76 +4,26 @@ from PIL import Image
 import numpy as np
 from datetime import datetime
 
-st.set_page_config(page_title="Skin Cancer AI - Professional", page_icon="🩺", layout="centered")
+st.set_page_config(page_title="Skin Cancer Classification", layout="centered")
 
 st.markdown("""
 <style>
-    .stApp { background: #EEF2F7; }
-    #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
-    
-    .hero {
-        background: linear-gradient(135deg, #050A14 0%, #0F2340 45%, #1A4D7A 100%);
-        padding: 36px 24px 28px 24px; border-radius: 22px;
-        text-align: center; color: white;
-        box-shadow: 0 15px 40px rgba(5,10,20,0.35);
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-    .hero h1 { font-size: 32px; margin: 6px 0 0 0; color: white; letter-spacing: -0.5px; }
-    .hero p { font-size: 14px; opacity: 0.85; margin: 10px 0 0 0; }
-    .badge {
-        display: inline-block; background: #00E676; color: #00210A;
-        padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 900; margin-top: 16px;
-    }
-    .badge2 {
-        display: inline-block; background: rgba(255,255,255,0.15); color: white;
-        padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-top: 16px; margin-left: 6px;
-        border: 1px solid rgba(255,255,255,0.2);
-    }
-    .card {
-        background: white; padding: 16px 10px; border-radius: 16px; text-align: center;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid #E8EDF3;
-    }
-    .card b { font-size: 14px; display: block; margin-top: 4px; }
-    .card span { font-size: 11px; color: #6B7280; }
+    #MainMenu {visibility: hidden;} footer {visibility: hidden;}
     div.stButton > button {
-        width: 100% !important; border-radius: 14px !important;
-        padding: 15px !important; font-weight: 800 !important; font-size: 16px !important;
-        background: linear-gradient(90deg, #FF3B30, #FF6B00) !important;
-        color: white !important; border: none !important;
-        box-shadow: 0 8px 20px rgba(255,59,48,0.30) !important;
+        width: 100% !important; border-radius: 10px !important;
+        padding: 12px !important; font-weight: 700 !important; font-size: 16px !important;
     }
     div.stDownloadButton > button {
-        width: 100% !important; border-radius: 14px !important; padding: 15px !important;
-        font-weight: 800 !important; font-size: 15px !important;
-        background: #0F172A !important; color: white !important; border: none !important;
+        width: 100% !important; border-radius: 10px !important; padding: 12px !important;
+        font-weight: 700 !important; font-size: 15px !important;
+        background: #111827 !important; color: white !important; border: none !important;
     }
-    .result-benign { background: #E8F5E9; border: 2px solid #2E7D32; padding: 20px; border-radius: 16px; text-align: center; }
-    .result-malignant { background: #FFEBEE; border: 2px solid #C62828; padding: 20px; border-radius: 16px; text-align: center; }
-    .disclaimer { background: #FFF8E1; padding: 14px; border-radius: 14px; font-size: 12px; color: #6D4C00; border: 1px solid #FFE082; }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("""
-<div class="hero">
-    <div style="font-size:48px;">🩺</div>
-    <h1>Skin Cancer AI</h1>
-    <p>Early Detection &nbsp;•&nbsp; Benign vs Malignant &nbsp;•&nbsp; Powered by Deep Learning</p>
-    <span class="badge">● AI MODEL ACTIVE</span>
-    <span class="badge2">CNN • 128 x 128</span>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-c1, c2, c3, c4 = st.columns(4)
-with c1: st.markdown('<div class="card">⚡<b>Fast</b><span>2 Sec Result</span></div>', unsafe_allow_html=True)
-with c2: st.markdown('<div class="card">🎯<b>Accurate</b><span>CNN Model</span></div>', unsafe_allow_html=True)
-with c3: st.markdown('<div class="card">🔒<b>Private</b><span>No Data Saved</span></div>', unsafe_allow_html=True)
-with c4: st.markdown('<div class="card">📄<b>Report</b><span>PDF Ready</span></div>', unsafe_allow_html=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
-st.markdown("### 📤 Upload Skin Lesion Image")
-st.caption("Upload a clear, close-up image of the skin lesion for best accuracy.")
+st.title("🩺 Skin Cancer Classification")
+st.write("Upload an image of the skin lesion, and the trained CNN model will predict whether it is Benign or Malignant.")
+st.markdown("---")
 
 @st.cache_resource
 def load_my_model():
@@ -85,7 +35,7 @@ except Exception as e:
     st.error(f"Error loading model: {e}")
     st.stop()
 
-uploaded_file = st.file_uploader("", type=["jpg", "jpeg", "png"], key="uploader")
+uploaded_file = st.file_uploader("Choose a skin lesion image...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file).convert("RGB")
@@ -95,31 +45,27 @@ if uploaded_file is not None:
     img_array = np.array(resized_image) / 255.0
     img_array = np.expand_dims(img_array, axis=0)
         
-    if st.button('🔍  ANALYZE NOW', type="primary"):
-        with st.spinner('AI Analyzing...'):
+    if st.button('🔍  PREDICT NOW', type="primary"):
+        with st.spinner('Analyzing...'):
             prediction = model.predict(img_array)[0][0]
             
         if prediction > 0.5:
             result = "Malignant"
             confidence = prediction * 100
-            st.markdown(f'<div class="result-malignant"><h2 style="color:#C62828; margin:0;">⚠️ MALIGNANT</h2><p style="margin:6px 0 0 0;">Confidence: <b>{confidence:.2f}%</b> • Please Consult Doctor Immediately</p></div>', unsafe_allow_html=True)
+            st.error(f"**Prediction: Malignant** (Confidence: {confidence:.2f}%)")
         else:
             result = "Benign"
             confidence = (1 - prediction) * 100
-            st.markdown(f'<div class="result-benign"><h2 style="color:#2E7D32; margin:0;">✅ BENIGN</h2><p style="margin:6px 0 0 0;">Confidence: <b>{confidence:.2f}%</b> • No Cancer Detected</p></div>', unsafe_allow_html=True)
+            st.success(f"**Prediction: Benign** (Confidence: {confidence:.2f}%)")
         
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.write(f"Confidence: {confidence:.1f}%")
-        st.progress(int(confidence))
-        
-        report_text = f"""SKIN CANCER AI - CLASSIFICATION REPORT
+        report_text = f"""SKIN CANCER CLASSIFICATION REPORT
 
 Date: {datetime.now().strftime('%d-%m-%Y %H:%M')}
-File: {uploaded_file.name}
+File Name: {uploaded_file.name}
 Prediction: {result}
 Confidence: {confidence:.2f}%
 Model: CNN (128x128)
-Note: Educational purpose only. Consult Dermatologist.
+Note: AI prediction for educational purpose only. Please consult a dermatologist.
 """
         st.session_state['report'] = report_text
 
@@ -135,6 +81,4 @@ Note: Educational purpose only. Consult Dermatologist.
         else:
             st.button("📥  Download Report", disabled=True)
 
-st.markdown("<br>", unsafe_allow_html=True)
-st.markdown('<div class="disclaimer">⚠️ <b>Disclaimer:</b> This tool is for educational purposes only. Please consult a Dermatologist for final diagnosis.</div>', unsafe_allow_html=True)
-st.markdown("<p style='text-align:center; color:#9CA3AF; font-size:12px; margin-top:16px;'>Skin Cancer AI • Final Year Project • Powered by CNN</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; color:grey; font-size:12px; margin-top:30px;'>Skin Cancer AI • Final Year Project</p>", unsafe_allow_html=True)
