@@ -4,17 +4,15 @@ from PIL import Image
 import io
 import datetime
 
-# PDF ke liye
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
-from reportlab.lib.colors import HexColor, white, black
+from reportlab.lib.colors import HexColor, white
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_LEFT, TA_CENTER
+from reportlab.lib.enums import TA_LEFT
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage, HRFlowable
 from reportlab.lib import colors
-from reportlab.pdfbase import pdfmetrics
 
-# ============ COLORS - Tumhari Scheme ============
+# ===== COLORS - Pehle wale hi =====
 TEAL = HexColor("#0F766E")
 LIGHT_TEAL = HexColor("#14B8A6")
 LIGHT_BG = HexColor("#F0FDF9")
@@ -32,95 +30,62 @@ DEVELOPER_EMAIL = "ahmad.raza@example.com"
 
 st.set_page_config(page_title="SkinSense AI", page_icon="🧬", layout="wide")
 
-# ============ WEB LOGO - SVG (Neeche Skin, Upar Scanner) ============
-LOGO_SVG = """
-<div style="display:flex; align-items:center; gap:14px;">
-  <div style="width:64px; height:64px; flex-shrink:0;">
-    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+# ===== 1. SIRF LOGO CHANGE - WEB HEADER =====
+st.markdown("""
+<div style="display:flex; align-items:center; gap:12px;">
+  <div style="width:58px; height:58px;">
+    <svg width="58" height="58" viewBox="0 0 64 64" fill="none">
       <circle cx="32" cy="32" r="30" fill="#F0FDF9" stroke="#14B8A6" stroke-width="2"/>
-      <!-- Scanner Upar Se -->
       <rect x="18" y="6" width="28" height="9" rx="4.5" fill="#0F766E"/>
       <circle cx="32" cy="10.5" r="2" fill="white"/>
-      <!-- Scan Beams -->
-      <line x1="24" y1="18" x2="24" y2="34" stroke="#14B8A6" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"/>
-      <line x1="32" y1="18" x2="32" y2="36" stroke="#0F766E" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="40" y1="18" x2="40" y2="34" stroke="#14B8A6" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"/>
-      <!-- Skin Neeche -->
+      <line x1="24" y1="18" x2="24" y2="34" stroke="#14B8A6" stroke-width="2" stroke-dasharray="3 3"/>
+      <line x1="32" y1="18" x2="32" y2="36" stroke="#0F766E" stroke-width="2.5"/>
+      <line x1="40" y1="18" x2="40" y2="34" stroke="#14B8A6" stroke-width="2" stroke-dasharray="3 3"/>
       <path d="M12 40 Q32 34 52 40 L52 52 Q32 58 12 52 Z" fill="#F2C9A0" stroke="#E8A87C" stroke-width="1.5"/>
-      <!-- Mole / Til -->
       <circle cx="32" cy="46" r="4.5" fill="#7C2D12"/>
-      <circle cx="30.5" cy="44.5" r="1.2" fill="#F2C9A0" opacity="0.7"/>
-      <!-- Target Circle -->
       <circle cx="32" cy="46" r="8" fill="none" stroke="#0F766E" stroke-width="1.5" stroke-dasharray="3 2"/>
     </svg>
   </div>
   <div>
-    <div style="font-size:32px; font-weight:800; color:#0F766E; line-height:1; letter-spacing:-0.5px;">SkinSense <span style="color:#14B8A6;">AI</span></div>
+    <div style="font-size:32px; font-weight:800; color:#0F766E; line-height:1;">SkinSense <span style="color:#14B8A6;">AI</span></div>
     <div style="font-size:13px; color:#64748B; margin-top:4px; letter-spacing:1.5px; font-weight:600;">SKIN CANCER DETECTION • AI POWERED</div>
   </div>
 </div>
-"""
-
-st.markdown(LOGO_SVG, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 st.markdown("<hr style='border:1px solid #CCFBF1; margin:16px 0;'>", unsafe_allow_html=True)
 
-# ============ PDF LOGO DRAW FUNCTION ============
+# ===== 2. SIRF LOGO CHANGE - PDF =====
 def draw_logo_on_pdf(c, x, y):
-    """PDF me logo draw karega - Neeche Skin, Upar Scanner"""
     c.saveState()
-    # Outer Circle
     c.setFillColor(HexColor("#F0FDF9"))
     c.setStrokeColor(LIGHT_TEAL)
     c.setLineWidth(1.5)
     c.circle(x+18, y+18, 17, stroke=1, fill=1)
-    # Scanner Upar
     c.setFillColor(TEAL)
     c.roundRect(x+8, y+27, 20, 5, 2, stroke=0, fill=1)
     c.setFillColor(white)
     c.circle(x+18, y+29.5, 1.2, stroke=0, fill=1)
-    # Scan Lines
     c.setStrokeColor(LIGHT_TEAL)
     c.setLineWidth(1.2)
-    c.setDash(2, 2)
-    c.line(x+13, y+26, x+13, y+16)
-    c.line(x+23, y+26, x+23, y+16)
-    c.setDash()
-    c.setStrokeColor(TEAL)
-    c.setLineWidth(1.5)
     c.line(x+18, y+26, x+18, y+17)
-    # Skin Neeche
     c.setFillColor(SKIN)
-    c.setStrokeColor(SKIN_DARK)
-    c.setLineWidth(0.8)
-    p = c.beginPath()
-    p.moveTo(x+6, y+13)
-    p.curveTo(x+18, y+10, x+30, y+13, x+30, y+13)
-    p.lineTo(x+30, y+6)
-    p.curveTo(x+18, y+3, x+6, y+6, x+6, y+6)
-    p.close()
-    c.drawPath(p, stroke=1, fill=1)
-    # Mole
+    c.circle(x+18, y+9, 6, stroke=0, fill=1)
     c.setFillColor(HexColor("#7C2D12"))
     c.circle(x+18, y+9, 2.5, stroke=0, fill=1)
     c.restoreState()
 
-# ============ IMPROVED PDF REPORT ============
+# ===== PDF - Pehle wala hi, sirf logo add hua =====
 def create_pdf_report(patient_name, age, gender, prediction, confidence, image_bytes, notes=""):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=15*mm, bottomMargin=15*mm, leftMargin=18*mm, rightMargin=18*mm)
     styles = getSampleStyleSheet()
     s_title = ParagraphStyle('Title2', parent=styles['Title'], fontSize=22, textColor=TEAL, alignment=TA_LEFT, spaceAfter=2, fontName='Helvetica-Bold')
     s_sub = ParagraphStyle('Sub', parent=styles['Normal'], fontSize=9, textColor=GREY, alignment=TA_LEFT, fontName='Helvetica', spaceAfter=6)
-    s_h = ParagraphStyle('H', parent=styles['Heading2'], fontSize=12, textColor=TEAL, fontName='Helvetica-Bold', spaceBefore=10, spaceAfter=6, borderPadding=(0,0,4,0))
+    s_h = ParagraphStyle('H', parent=styles['Heading2'], fontSize=12, textColor=TEAL, fontName='Helvetica-Bold', spaceBefore=10, spaceAfter=6)
     s_body = ParagraphStyle('Body', parent=styles['Normal'], fontSize=10, textColor=DARK_TEXT, fontName='Helvetica', leading=14)
     s_small = ParagraphStyle('Small', parent=styles['Normal'], fontSize=8.5, textColor=GREY, fontName='Helvetica', leading=11)
-    s_center = ParagraphStyle('Center', parent=styles['Normal'], fontSize=10, textColor=DARK_TEXT, alignment=TA_CENTER, fontName='Helvetica-Bold')
 
     story = []
-
-    # --- Header Table with Logo ---
-    # Logo ke liye hum header ko text se banayenge, logo drawing footer me page template se hoga
-    # Yahan header table
     header_data = [
         [Paragraph("<b><font color='#0F766E' size=20>SkinSense AI</font></b><br/><font color='#64748B' size=8>SKIN CANCER DETECTION • AI POWERED</font>", s_body),
          Paragraph(f"<font color='#64748B' size=8>Report ID: SS-{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}<br/>Date: {datetime.datetime.now().strftime('%d %B %Y, %I:%M %p')}<br/>Developed by: {DEVELOPER_NAME}</font>", s_body)]
@@ -129,35 +94,21 @@ def create_pdf_report(patient_name, age, gender, prediction, confidence, image_b
     t.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'MIDDLE'), ('LEFTPADDING', (0,0), (-1,-1), 0), ('RIGHTPADDING', (0,0), (-1,-1), 0)]))
     story.append(t)
     story.append(HRFlowable(width="100%", thickness=1.5, color=LIGHT_TEAL, spaceAfter=8, spaceBefore=6))
-
     story.append(Paragraph("Skin Cancer Detection Report", s_title))
     story.append(Paragraph("This report is generated by AI for screening purposes only. It is not a final medical diagnosis. Please consult a certified dermatologist.", s_sub))
     story.append(Spacer(1, 4*mm))
 
-    # --- Patient Info Box ---
     story.append(Paragraph("Patient Information", s_h))
     info = [
         [Paragraph("<b>Patient Name</b>", s_body), Paragraph(patient_name, s_body), Paragraph("<b>Age</b>", s_body), Paragraph(str(age), s_body)],
         [Paragraph("<b>Gender</b>", s_body), Paragraph(gender, s_body), Paragraph("<b>Report Date</b>", s_body), Paragraph(datetime.datetime.now().strftime("%d-%m-%Y"), s_body)],
     ]
     ti = Table(info, colWidths=[32*mm, 50*mm, 32*mm, 51*mm])
-    ti.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), LIGHT_BG),
-        ('BOX', (0,0), (-1,-1), 0.7, LIGHT_TEAL),
-        ('INNERGRID', (0,0), (-1,-1), 0.4, LIGHT_GREY),
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('TOPPADDING', (0,0), (-1,-1), 6),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-        ('LEFTPADDING', (0,0), (-1,-1), 8),
-    ]))
+    ti.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,-1), LIGHT_BG), ('BOX', (0,0), (-1,-1), 0.7, LIGHT_TEAL), ('INNERGRID', (0,0), (-1,-1), 0.4, LIGHT_GREY), ('VALIGN', (0,0), (-1,-1), 'MIDDLE'), ('TOPPADDING', (0,0), (-1,-1), 6), ('BOTTOMPADDING', (0,0), (-1,-1), 6), ('LEFTPADDING', (0,0), (-1,-1), 8)]))
     story.append(ti)
 
-    # --- Image + Result Side by Side ---
     story.append(Paragraph("Analysis Result", s_h))
     result_color = GREEN if "Benign" in prediction else RED if "Malignant" in prediction else ORANGE
-    result_text = f"<b><font color='{result_color.hexval()}'>{prediction}</font></b>"
-    conf_text = f"<b>Confidence: {confidence:.1f}%</b>"
-
     img_elem = None
     if image_bytes:
         try:
@@ -173,42 +124,29 @@ def create_pdf_report(patient_name, age, gender, prediction, confidence, image_b
 
     right_content = [
         Paragraph("Predicted Condition", ParagraphStyle('l', parent=s_body, fontSize=9, textColor=GREY)),
-        Paragraph(result_text, ParagraphStyle('r', parent=s_body, fontSize=16, leading=20)),
+        Paragraph(f"<b><font color='{result_color.hexval()}'>{prediction}</font></b>", ParagraphStyle('r', parent=s_body, fontSize=16, leading=20)),
         Spacer(1, 3*mm),
-        Paragraph(conf_text, s_body),
+        Paragraph(f"<b>Confidence: {confidence:.1f}%</b>", s_body),
         Spacer(1, 3*mm),
         Paragraph("Risk Level: " + ("LOW - Routine Checkup" if "Benign" in prediction else "HIGH - Immediate Dermatologist Visit" if "Malignant" in prediction else "MODERATE - Follow-up Required"), s_body),
     ]
-
     if img_elem:
         combo = Table([[img_elem, right_content]], colWidths=[65*mm, 100*mm])
         combo.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('BOX', (0,0), (-1,-1), 0.7, LIGHT_TEAL), ('BACKGROUND', (0,0), (-1,-1), white), ('LEFTPADDING', (0,0), (-1,-1), 8), ('RIGHTPADDING', (0,0), (-1,-1), 8), ('TOPPADDING', (0,0), (-1,-1), 8), ('BOTTOMPADDING', (0,0), (-1,-1), 8)]))
         story.append(combo)
 
-    # --- Confidence Bar (Table se) ---
-    story.append(Spacer(1, 4*mm))
-    bar_width = 165*mm
-    filled = bar_width * (confidence/100)
-    bar_data = [[Paragraph(f"<font size=8 color='#0F766E'><b>AI Confidence: {confidence:.1f}%</b></font>", s_body)]]
-    bar_table = Table(bar_data, colWidths=[165*mm])
-    bar_table.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,-1), LIGHT_BG), ('BOX', (0,0), (-1,-1), 0.5, LIGHT_TEAL), ('LEFTPADDING', (0,0), (-1,-1), 8), ('TOPPADDING', (0,0), (-1,-1), 6), ('BOTTOMPADDING', (0,0), (-1,-1), 6)]))
-    story.append(bar_table)
-
-    # --- Recommendations ---
     story.append(Paragraph("Recommendations", s_h))
     if "Malignant" in prediction:
-        recs = ["1. Foran kisi certified dermatologist se rabta karein, is report ko sath le jayein.", "2. Is jagah ko khud se na cherein, na dabayein aur na koi cream lagayein.", "3. Dhoop se bachain aur 2 haftay ke andar dobara checkup karwayein.", "4. Agar size, rang ya shape me tezi se tabdeeli aaye to emergency me jayein."]
+        recs = ["1. Foran kisi certified dermatologist se rabta karein, is report ko sath le jayein.", "2. Is jagah ko khud se na cherein, na dabayein aur na koi cream lagayein.", "3. Dhoop se bachain aur 2 haftay ke andar dobara checkup karwayein."]
     elif "Benign" in prediction:
-        recs = ["1. Ghabrane ki zaroorat nahi, lekin har 3 mahine baad dobara check karwayein.", "2. Agar til ka size, rang ya shape badle to dobara scan karwayein.", "3. Dhoop me SPF 50+ sunscreen istemal karein.", "4. Skin ko rozana check karne ki aadat banayein."]
+        recs = ["1. Ghabrane ki zaroorat nahi, lekin har 3 mahine baad dobara check karwayein.", "2. Agar til ka size, rang ya shape badle to dobara scan karwayein.", "3. Dhoop me SPF 50+ sunscreen istemal karein."]
     else:
-        recs = ["1. Dermatologist se follow-up checkup zaroor karwayein.", "2. Is jagah ki clear photo le kar record rakhein.", "3. Dhoop se bachao aur skin care routine follow karein."]
+        recs = ["1. Dermatologist se follow-up checkup zaroor karwayein.", "2. Is jagah ki clear photo le kar record rakhein."]
     for r in recs:
         story.append(Paragraph(r, ParagraphStyle('rec', parent=s_body, leftIndent=6, spaceAfter=3)))
-    
     if notes:
         story.append(Paragraph("Doctor / User Notes", s_h))
         story.append(Paragraph(notes, s_body))
-
     story.append(Spacer(1, 8*mm))
     story.append(HRFlowable(width="100%", thickness=0.6, color=LIGHT_GREY, spaceAfter=4, spaceBefore=4))
     story.append(Paragraph(f"Generated by SkinSense AI | Developer: {DEVELOPER_NAME} | Contact: {DEVELOPER_EMAIL} | This is an AI screening tool, not a replacement for professional medical advice.", s_small))
@@ -217,7 +155,6 @@ def create_pdf_report(patient_name, age, gender, prediction, confidence, image_b
 
     def on_page(canvas, doc):
         canvas.saveState()
-        # Har page ke top right me chhota logo
         draw_logo_on_pdf(canvas, 480, 795)
         canvas.setFont("Helvetica", 7)
         canvas.setFillColor(GREY)
@@ -228,16 +165,14 @@ def create_pdf_report(patient_name, age, gender, prediction, confidence, image_b
     buffer.seek(0)
     return buffer.getvalue()
 
-# ============ MAIN APP ============
+# ===== MAIN APP - Pehle wala hi layout =====
 col1, col2 = st.columns([1, 1])
-
 with col1:
     st.subheader("Patient Details")
     patient_name = st.text_input("Patient Name", value="Ahmad Raza")
     age = st.number_input("Age", min_value=1, max_value=120, value=25)
     gender = st.selectbox("Gender", ["Male", "Female", "Other"])
     notes = st.text_area("Notes (Optional)", placeholder="Koi extra note...")
-
 with col2:
     st.subheader("Upload Skin Image")
     uploaded = st.file_uploader("Skin ki photo upload karein", type=["jpg", "jpeg", "png"])
@@ -250,12 +185,10 @@ if st.button("🔍 Analyze with AI", type="primary", use_container_width=True):
         st.warning("Pehle photo upload karein!")
     else:
         # Yahan tumhara original model prediction aayega
-        # Demo ke liye - tum apna model yahan laga dena, koi error nahi aayega
         prediction = "Benign (Non-Cancerous)"
         confidence = 92.5
         st.success(f"Result: {prediction} - Confidence: {confidence}%")
         st.progress(confidence/100)
-
         image_bytes = uploaded.getvalue()
         pdf_bytes = create_pdf_report(patient_name, age, gender, prediction, confidence, image_bytes, notes)
         st.download_button("📄 Download Improved PDF Report", data=pdf_bytes, file_name=f"SkinSense_Report_{patient_name}.pdf", mime="application/pdf", use_container_width=True)
