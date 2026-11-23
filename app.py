@@ -16,7 +16,7 @@ from reportlab.lib.colors import HexColor
 
 DEVELOPER_NAME = "Abdul Rehman"
 
-st.set_page_config(page_title=f"SkinSense AI - by {DEVELOPER_NAME}", page_icon="👁️", layout="centered")
+st.set_page_config(page_title=f"Skin Cancer Detector - by {DEVELOPER_NAME}", page_icon="👁️", layout="centered")
 
 if "uploader_key" not in st.session_state:
     st.session_state.uploader_key = 0
@@ -82,7 +82,7 @@ def create_pdf_report(result, confidence, risk, patient_name="Not Provided", age
     advice = "High Risk Detected. Immediate attention is recommended. Early action gives the best results." if is_malignant else "Your skin appears healthy. No signs of malignancy detected in this analysis."
     next_step = "Take action within 48 hours. Do not delay your next step." if is_malignant else "Continue regular skin monitoring. Re-check after 3 months for complete peace of mind."
     date_str = datetime.now().strftime('%d %B %Y, %I:%M %p')
-    report_id = f"SS-{datetime.now().strftime('%Y%m%d%H%M')}"
+    report_id = f"SCD-{datetime.now().strftime('%Y%m%d%H%M')}"
     age_display = f"{age} Years Old" if age != "Not Provided" else "Not Provided"
     sTitle = ParagraphStyle('Title', fontName='Helvetica-Bold', fontSize=24, leading=28, textColor=colors.white, alignment=TA_CENTER)
     sSub = ParagraphStyle('Sub', fontName='Helvetica', fontSize=10, leading=13, textColor=HexColor("#CCFBF1"), alignment=TA_CENTER)
@@ -100,7 +100,7 @@ def create_pdf_report(result, confidence, risk, patient_name="Not Provided", age
     sPatientValue = ParagraphStyle('PV', fontName='Helvetica-Bold', fontSize=11, leading=14, textColor=BLACK, alignment=TA_LEFT)
 
     header_data = [
-        [Paragraph("SkinSense AI", sTitle)],
+        [Paragraph("Skin Cancer Detector", sTitle)],
         [Paragraph("Early Skin Cancer Detection &nbsp;|&nbsp; Benign vs Malignant &nbsp;|&nbsp; Powered by Deep Learning", sSub)],
         [Paragraph(f"DEVELOPED BY {DEVELOPER_NAME.upper()} &nbsp;•&nbsp; FINAL YEAR PROJECT", sHeadSmall)],
     ]
@@ -195,9 +195,9 @@ def create_pdf_report(result, confidence, risk, patient_name="Not Provided", age
     story.append(Spacer(1, 8*mm))
     story.append(HRFlowable(width="100%", thickness=0.5, color=HexColor("#E2E8F0")))
     story.append(Spacer(1, 4*mm))
-    story.append(Paragraph("SkinSense AI - Advanced AI-Powered Early Screening System. This report is generated instantly by our Deep Learning model for fast and accurate preliminary analysis.", sDisc))
+    story.append(Paragraph("Skin Cancer Detector - Advanced AI-Powered Early Screening System. This report is generated instantly by our Deep Learning model for fast and accurate preliminary analysis.", sDisc))
     story.append(Spacer(1, 6*mm))
-    footer_data = [[Paragraph(f"SkinSense AI &nbsp;|&nbsp; Developed by <b>{DEVELOPER_NAME}</b> &nbsp;|&nbsp; Early Detection Saves Lives", sFooter)]]
+    footer_data = [[Paragraph(f"Skin Cancer Detector &nbsp;|&nbsp; Developed by <b>{DEVELOPER_NAME}</b> &nbsp;|&nbsp; Early Detection Saves Lives", sFooter)]]
     footer_table = Table(footer_data, colWidths=[210*mm])
     footer_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), TEAL),
@@ -287,7 +287,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Smooth scroll trigger - jab go_top True ho to ahista upar jao
 if st.session_state.go_top:
     components.html("""
     <script>
@@ -330,7 +329,7 @@ st.markdown(f"""
           <circle cx="32" cy="46" r="8" fill="none" stroke="#0F766E" stroke-width="1.5" stroke-dasharray="3 2"/>
         </svg>
     </div>
-    <h1>Skin<span>Sense</span> AI</h1>
+    <h1>Skin <span>Cancer Detector</span></h1>
     <p>Early Skin Cancer Detection • Benign vs Malignant • Powered by Deep Learning</p>
     <br>
     <span class="badge-green">● AI MODEL ACTIVE</span>
@@ -402,7 +401,7 @@ if image is not None:
     img_array = np.expand_dims(img_array, axis=0)
 
     if st.button('🔬 Analyze Now', type="primary", use_container_width=True):
-        with st.spinner('SkinSense AI is analyzing...'):
+        with st.spinner('Skin Cancer Detector is analyzing...'):
             prediction = model.predict(img_array)[0][0]
         if prediction > 0.5:
             st.session_state.result = "Malignant"
@@ -465,7 +464,7 @@ if image is not None:
         final_gender = patient_gender_input if patient_gender_input != "Prefer not to say" else "Not Provided"
         file_suffix = final_name.replace(" ", "_") if final_name != "Not Provided" else "Report"
         pdf_buffer = create_pdf_report(result, conf, risk, final_name, final_age, final_gender)
-        st.download_button("⬇️ Download PDF Report", data=pdf_buffer, file_name=f"SkinSense_{file_suffix}.pdf", mime="application/pdf", use_container_width=True)
+        st.download_button("⬇️ Download PDF Report", data=pdf_buffer, file_name=f"Skin_Cancer_Detector_{file_suffix}.pdf", mime="application/pdf", use_container_width=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("🔄 Check Another Image", use_container_width=True):
@@ -478,7 +477,7 @@ if image is not None:
 
 st.markdown(f"""
 <div style="background:#E0F2FE; padding:12px; border-radius:12px; margin-top:20px; text-align:center; font-size:12px; color:#0C4A6E;">
-✨ <b>SkinSense AI</b> - Advanced AI-Powered Early Screening System | Fast, Accurate & Trusted Preliminary Analysis
+✨ <b>Skin Cancer Detector</b> - Advanced AI-Powered Early Screening System | Fast, Accurate & Trusted Preliminary Analysis
 </div>
-<div class="footer">Made with ❤️ by <b>{DEVELOPER_NAME}</b><br><b>SkinSense AI</b> | Early Detection Saves Lives • Final Year Project</div>
+<div class="footer">Made with ❤️ by <b>{DEVELOPER_NAME}</b><br><b>Skin Cancer Detector</b> | Early Detection Saves Lives • Final Year Project</div>
 """, unsafe_allow_html=True)
