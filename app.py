@@ -22,7 +22,7 @@ except Exception as e:
 uploaded_file = st.file_uploader("Choose a skin lesion image...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    image = Image.open(uploaded_file)
+    image = Image.open(uploaded_file).convert("RGB")
     st.image(image, caption='Uploaded Image', use_container_width=True)
     
     # Preprocess image to match the model's training parameters (128x128)
@@ -30,7 +30,7 @@ if uploaded_file is not None:
     img_array = np.array(resized_image) / 255.0
     
     # Add batch dimension if RGB
-    if img_array.shape == (128, 128, 3):
+    if True:
         img_array = np.expand_dims(img_array, axis=0)
         
         if st.button('Predict'):
