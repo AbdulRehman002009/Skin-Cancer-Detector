@@ -36,7 +36,6 @@ if "show_download" not in st.session_state:
 # --- PDF - LOGO FIXED INSIDE HEADER ---
 # =====================================================
 def draw_logo_on_pdf(c):
-    # FIX: pehle y=795 tha jo bahar nikal raha tha, ab header ke andar fixed hai
     x = 28
     y = 808
     c.saveState()
@@ -211,7 +210,6 @@ def create_pdf_report(result, confidence, risk, patient_name="Not Provided", age
 
 st.markdown("""
 <style>
-    /* ===== 1. HIDE STREAMLIT BAR / MENU / DEPLOY ===== */
     header[data-testid="stHeader"] { visibility: hidden !important; height: 0px !important; }
     div[data-testid="stToolbar"] { visibility: hidden !important; height: 0px !important; }
     div[data-testid="stDecoration"] { visibility: hidden !important; height: 0px !important; }
@@ -221,9 +219,16 @@ st.markdown("""
     .stAppDeployButton { display: none !important; }
     button[kind="header"] { display: none !important; }
 
+    /* ===== PROFESSIONAL ANIMATIONS - HALKI WALI ===== */
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes popIn { 0% { opacity: 0; transform: scale(0.92); } 100% { opacity: 1; transform: scale(1); } }
+    @keyframes softGlow { 0%,100% { box-shadow: 0 15px 30px rgba(0,0,0,0.22); } 50% { box-shadow: 0 15px 35px rgba(20,184,166,0.35); } }
+    @keyframes gentlePulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
     .main { background-color: #F8FAFC; }
-    .header-box { background: linear-gradient(135deg, #020617 0%, #0F766E 60%, #14B8A6 100%); padding: 32px 25px 26px 25px; border-radius: 22px; color: white; text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.22); margin-bottom: 12px; }
-    .logo-circle { background: white; width: 82px; height: 82px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; }
+    .header-box { background: linear-gradient(135deg, #020617 0%, #0F766E 60%, #14B8A6 100%); padding: 32px 25px 26px 25px; border-radius: 22px; color: white; text-align: center; margin-bottom: 12px; animation: fadeInUp 0.6s ease both, softGlow 4s ease-in-out infinite; }
+    .logo-circle { background: white; width: 82px; height: 82px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; animation: gentlePulse 3s ease-in-out infinite; }
     .header-box h1 { color: white !important; font-size: 40px; margin: 0; }
     .header-box h1 span { color: #5EEAD4; }
     .header-box p { color: #CCFBF1 !important; font-size: 15px; margin-top: 6px; }
@@ -231,30 +236,29 @@ st.markdown("""
     .badge-white { background: rgba(255,255,255,0.16); color: white; padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3); }
     .dev-badge { background: #F59E0B; color: #1A1A1A; padding: 8px 18px; border-radius: 50px; font-size: 13px; font-weight: 800; display: inline-block; margin-top: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
 
-    /* ===== 5. TRUST LINE ===== */
-    .trust-line { background: white; border: 1px solid #E2E8F0; border-radius: 12px; padding: 10px 12px; text-align: center; font-size: 12.5px; font-weight: 700; color: #0F172A; margin-bottom: 18px; box-shadow: 0 3px 10px rgba(0,0,0,0.04); }
+    .trust-line { background: white; border: 1px solid #E2E8F0; border-radius: 12px; padding: 10px 12px; text-align: center; font-size: 12.5px; font-weight: 700; color: #0F172A; margin-bottom: 18px; box-shadow: 0 3px 10px rgba(0,0,0,0.04); animation: fadeInUp 0.6s ease 0.1s both; }
     .trust-line span { color: #0F766E; }
     .trust-line i { color: #94A3B8; font-style: normal; padding: 0 6px; }
 
-    .feature-box { background: white; padding: 18px 6px; border-radius: 16px; text-align: center; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); min-height: 115px; }
+    .feature-box { background: white; padding: 18px 6px; border-radius: 16px; text-align: center; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); min-height: 115px; transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeInUp 0.6s ease both; }
+    .feature-box:hover { transform: translateY(-5px); box-shadow: 0 12px 22px rgba(15,118,110,0.18); border-color: #99F6E4; }
     .feature-box b { font-size: 14px; color: #0F172A; }
     .feature-box p { font-size: 11px; color: #64748B; margin: 3px 0 0 0; line-height: 1.3; }
-    [data-testid="stFileUploader"] { background: white; border: 2.5px dashed #14B8A6 !important; border-radius: 18px !important; padding: 18px 18px 14px 18px !important; margin-top: 18px; }
+    [data-testid="stFileUploader"] { background: white; border: 2.5px dashed #14B8A6 !important; border-radius: 18px !important; padding: 18px 18px 14px 18px !important; margin-top: 18px; animation: fadeInUp 0.5s ease both; }
     [data-testid="stFileUploaderDropzone"] button { background: #0F766E !important; color: white !important; border-radius: 14px !important; padding: 14px 20px !important; font-weight: 700 !important; font-size: 16px !important; border: none !important; width: 100% !important; }
     [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] { display: flex !important; align-items: center !important; gap: 8px !important; width: 100% !important; }
     [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] button { width: auto !important; min-width: 36px !important; height: 36px !important; padding: 0px 8px !important; border-radius: 50% !important; flex-shrink: 0 !important; background: #F1F5F9 !important; color: #0F172A !important; border: 1px solid #E2E8F0 !important; }
     button[data-testid="stFileUploaderDeleteBtn"] { width: 36px !important; min-width: 36px !important; background: #FEE2E2 !important; color: #DC2626 !important; }
-    [data-testid="stImage"] img { width: 100% !important; max-height: 420px !important; object-fit: contain !important; border-radius: 14px; background: #F1F5F9; padding: 10px; }
-    .image-box { background: white; border: 2px solid #CCFBF1; border-radius: 18px; padding: 14px; margin-top: 14px; }
+    [data-testid="stImage"] img { width: 100% !important; max-height: 420px !important; object-fit: contain !important; border-radius: 14px; background: #F1F5F9; padding: 10px; animation: fadeIn 0.6s ease both; }
+    .image-box { background: white; border: 2px solid #CCFBF1; border-radius: 18px; padding: 14px; margin-top: 14px; animation: fadeInUp 0.5s ease both; }
 
-    /* ===== 4. BIG CONFIDENCE BAR ===== */
-    .conf-box { background: white; border: 1px solid #E2E8F0; border-radius: 16px; padding: 16px; margin-top: 12px; }
+    .conf-box { background: white; border: 1px solid #E2E8F0; border-radius: 16px; padding: 16px; margin-top: 12px; animation: popIn 0.45s ease both; }
     .conf-top { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 14px; color: #0F172A; margin-bottom: 8px; }
     .conf-bar-bg { background: #E2E8F0; border-radius: 50px; height: 18px; overflow: hidden; }
-    .conf-bar-fill { height: 100%; border-radius: 50px; }
+    .conf-bar-fill { height: 100%; border-radius: 50px; transition: width 0.8s ease; }
     .conf-sub { font-size: 12px; color: #64748B; margin-top: 8px; text-align: center; }
 
-    .patient-box { background: white; border: 1px solid #E2E8F0; border-left: 5px solid #0F766E; border-radius: 16px; padding: 18px 18px 14px 18px; margin-top: 18px; box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
+    .patient-box { background: white; border: 1px solid #E2E8F0; border-left: 5px solid #0F766E; border-radius: 16px; padding: 18px 18px 14px 18px; margin-top: 18px; box-shadow: 0 6px 16px rgba(0,0,0,0.06); animation: fadeInUp 0.5s ease both; }
     .patient-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .patient-title { font-size: 16px; font-weight: 800; color: #0F172A; }
     .optional-badge { background: #F1F5F9; color: #64748B; border: 1px solid #E2E8F0; padding: 4px 11px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
@@ -271,8 +275,9 @@ st.markdown("""
     div[data-testid="stDownloadButton"] > button { background: linear-gradient(110deg, #0F766E 30%, #14B8A6 50%, #0F766E 70%) !important; background-size: 200% auto !important; color: white !important; border: none !important; border-radius: 50px !important; font-weight: 800 !important; font-size: 17px !important; padding: 16px 20px !important; width: 100% !important; animation: pdfPulse 2s infinite, pdfShine 2.5s linear infinite !important; transition: transform 0.2s ease !important; }
     div[data-testid="stDownloadButton"] > button:hover { transform: scale(1.02) !important; }
     div[data-testid="stDownloadButton"] > button:active { transform: scale(0.98) !important; }
-    .stButton > button { border-radius: 50px !important; font-weight: 700 !important; padding: 14px 20px !important; font-size: 16px !important; border: none !important; box-shadow: 0 8px 18px rgba(0,0,0,0.15) !important; }
-    div[data-testid="stButton"] button[kind="primary"] { background: linear-gradient(135deg, #0F766E, #14B8A6) !important; color: white !important; font-size: 19px !important; padding: 16px !important; width: 100%; }
+    .stButton > button { border-radius: 50px !important; font-weight: 700 !important; padding: 14px 20px !important; font-size: 16px !important; border: none !important; box-shadow: 0 8px 18px rgba(0,0,0,0.15) !important; transition: transform 0.25s ease, box-shadow 0.25s ease !important; }
+    .stButton > button:hover { transform: translateY(-2px); box-shadow: 0 12px 20px rgba(0,0,0,0.18) !important; }
+    div[data-testid="stButton"] button[kind="primary"] { background: linear-gradient(135deg, #0F766E, #14B8A6) !important; color: white !important; font-size: 19px !important; padding: 16px !important; width: 100%; animation: gentlePulse 2.5s ease-in-out infinite; }
     .footer { text-align: center; color: #94A3B8; font-size: 12px; margin-top: 22px; }
     .footer b { color: #0F766E; font-size: 14px; }
 </style>
@@ -397,7 +402,6 @@ if image is not None:
             st.write(f"**Risk:** Low")
             st.info("Analysis Complete: Your skin appears healthy. No signs of malignancy detected.")
 
-        # ===== 4. BIG CONFIDENCE BAR =====
         st.markdown(f"""
         <div class="conf-box">
             <div class="conf-top"><span>🎯 AI Confidence</span><span style="color:{bar_color};">{conf:.2f}% Confident</span></div>
@@ -430,7 +434,6 @@ if image is not None:
         pdf_buffer = create_pdf_report(result, conf, risk, final_name, final_age, final_gender)
         st.download_button("⬇️ Download PDF Report", data=pdf_buffer, file_name=f"SkinSense_{file_suffix}.pdf", mime="application/pdf", use_container_width=True)
 
-        # ===== 2. NEW ANALYSIS BUTTON =====
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("🔄 Check Another Image", use_container_width=True):
             st.session_state.show_how = False
