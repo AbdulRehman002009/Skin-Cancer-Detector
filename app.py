@@ -6,86 +6,101 @@ from datetime import datetime
 import io
 from fpdf import FPDF
 
-st.set_page_config(page_title="SkinSense AI - Abdul Rehman", page_icon="✦", layout="centered")
+st.set_page_config(page_title="SkinSense AI - Abdul Rehman", page_icon="👁️", layout="centered")
 
 st.markdown("""
 <style>
-    .stApp { background: #F0F4F8; }
+    .stApp { background: #F2F7F7; }
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
 
     .hero {
-        background: linear-gradient(135deg, #042F2E 0%, #0F766E 45%, #14B8A6 100%);
-        padding: 30px 20px 24px 20px; border-radius: 24px;
+        background: linear-gradient(135deg, #0F766E 0%, #14B8A6 50%, #06B6D4 100%);
+        padding: 28px 20px 22px 20px; border-radius: 20px;
         text-align: center; color: white;
-        box-shadow: 0 15px 35px rgba(4,47,46,0.35);
-        border: 1px solid rgba(255,255,255,0.15);
-        position: relative; overflow: hidden;
+        box-shadow: 0 12px 30px rgba(20,184,166,0.35);
     }
-    .hero::before {
-        content: ""; position: absolute; top: -60px; right: -60px;
-        width: 180px; height: 180px; background: rgba(255,255,255,0.08);
-        border-radius: 50%;
+    .logo-circle {
+        width: 72px; height: 72px; margin: 0 auto;
+        background: white; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 36px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);
     }
-    /* APNA LOGO - AR MONOGRAM */
-    .my-logo {
-        width: 82px; height: 82px; margin: 0 auto; position: relative; z-index: 2;
-        background: linear-gradient(135deg, #F59E0B, #FDE68A);
-        border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        font-size: 32px; font-weight: 900; color: #042F2E;
-        border: 3px solid white;
-        box-shadow: 0 10px 25px rgba(245,158,11,0.5);
-        letter-spacing: -1px;
+    .hero h1 { font-size: 32px; margin: 10px 0 0 0; color: white; font-weight: 900; }
+    .hero p { font-size: 13px; opacity: 0.95; margin: 6px 0 0 0; }
+    .badge-green { display: inline-block; background: #FEF08A; color: #14532D; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; margin-top: 12px; }
+    .badge-white { display: inline-block; background: rgba(255,255,255,0.25); color: white; padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-top: 12px; margin-left: 5px; border: 1px solid rgba(255,255,255,0.4); }
+    .creator-badge { background: #F59E0B; color: white; font-weight: 800; font-size: 13px; padding: 8px 20px; border-radius: 20px; display: inline-block; margin-top: 14px; box-shadow: 0 5px 15px rgba(245,158,11,0.4); }
+
+    /* --- WOHI 4 CARDS JAISE USKE HAIN --- */
+    .card {
+        background: white; padding: 18px 6px 16px 6px; border-radius: 16px; text-align: center;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.05); border: 1px solid #E5E7EB;
     }
-    .my-logo span { font-size: 14px; position: absolute; top: -6px; right: -2px; background: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #0F766E; font-size: 16px; font-weight: 900; }
-    .hero h1 { font-size: 34px; margin: 14px 0 0 0; color: white; font-weight: 900; letter-spacing: -0.5px; position: relative; z-index: 2; }
-    .hero h1 span { color: #FDE68A; }
-    .hero p { font-size: 13px; opacity: 0.9; margin: 6px 0 0 0; position: relative; z-index: 2; }
-    .badge-green { display: inline-block; background: #CCFBF1; color: #134E4A; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 800; margin-top: 14px; position: relative; z-index: 2; }
-    .badge-white { display: inline-block; background: rgba(255,255,255,0.18); color: white; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-top: 14px; margin-left: 6px; border: 1px solid rgba(255,255,255,0.3); position: relative; z-index: 2; }
-    .creator-badge {
-        background: linear-gradient(90deg, #F59E0B, #F97316); color: white; font-weight: 800; font-size: 13px;
-        padding: 9px 22px; border-radius: 20px; display: inline-block; margin-top: 16px;
-        box-shadow: 0 6px 18px rgba(249,115,22,0.4); position: relative; z-index: 2;
+    .card-icon { font-size: 28px; margin-bottom: 6px; }
+    .card b { font-size: 14px; display: block; color: #111827; }
+    .card span { font-size: 11px; color: #6B7280; display: block; margin-top: 3px; }
+
+    /* --- WOHI DASHED UPLOAD BOX --- */
+    .upload-box {
+        background: #F8FAFC; border: 2px dashed #14B8A6; border-radius: 16px;
+        padding: 18px 18px 20px 18px;
     }
-    .card { background: white; padding: 16px 6px 12px 6px; border-radius: 16px; text-align: center; box-shadow: 0 4px 14px rgba(0,0,0,0.06); border: 1px solid #E5E7EB; }
-    .card-icon { font-size: 26px; margin-bottom: 4px; }
-    .card b { font-size: 13px; display: block; color: #111827; }
-    .card span { font-size: 10.5px; color: #6B7280; display: block; margin-top: 2px; }
-    div.stButton > button { width: 100% !important; border-radius: 12px !important; padding: 13px !important; font-weight: 800 !important; font-size: 15px !important; background: linear-gradient(90deg, #0F766E, #14B8A6) !important; color: white !important; border: none !important; }
-    div.stDownloadButton > button { width: 100% !important; border-radius: 12px !important; padding: 13px !important; font-weight: 700 !important; font-size: 14px !important; background: white !important; color: #0F766E !important; border: 2px solid #14B8A6 !important; }
+    .upload-title { font-size: 15px; font-weight: 700; color: #111827; margin-bottom: 14px; }
+    .upload-inner {
+        background: #F1F5F9; border-radius: 10px; padding: 12px;
+        display: flex; align-items: center; gap: 14px;
+    }
+    .upload-btn-text { color: #6B7280; font-size: 13px; }
+
+    div.stButton > button {
+        width: 100% !important; border-radius: 12px !important;
+        padding: 13px !important; font-weight: 700 !important; font-size: 14px !important;
+        background: white !important; color: #374151 !important;
+        border: 1px solid #E5E7EB !important; box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+    }
+    div.stDownloadButton > button {
+        width: 100% !important; border-radius: 12px !important; padding: 13px !important;
+        font-weight: 800 !important; font-size: 14px !important;
+        background: #14B8A6 !important; color: white !important; border: none !important;
+    }
+    .analyze-btn button {
+        background: linear-gradient(90deg, #0F766E, #14B8A6) !important; color: white !important;
+        border: none !important; font-weight: 800 !important; font-size: 15px !important;
+    }
     .result-benign { background: #ECFDF5; border: 1px solid #6EE7B7; padding: 16px; border-radius: 14px; }
     .result-malignant { background: #FEF2F2; border: 1px solid #FCA5A5; padding: 16px; border-radius: 14px; }
-    .disclaimer { background: #FFFBEB; padding: 12px; border-radius: 12px; font-size: 11px; color: #92400E; border: 1px solid #FDE68A; text-align: center; }
+    .disclaimer { background: #FFFBEB; padding: 12px; border-radius: 12px; font-size: 12px; color: #92400E; border: 1px solid #FDE68A; text-align: center; }
+    .footer { text-align: center; color: #6B7280; font-size: 13px; margin-top: 14px; }
+    .footer b { color: #0F766E; }
 </style>
 """, unsafe_allow_html=True)
 
-# --- HERO WITH APNA LOGO ---
 st.markdown("""
 <div class="hero">
-    <div class="my-logo">AR<span>+</span></div>
-    <h1>Skin<span>Sense</span> AI</h1>
+    <div class="logo-circle">👁️</div>
+    <h1>SkinSense AI</h1>
     <p>Early Skin Cancer Detection • Benign vs Malignant • Powered by Deep Learning</p>
     <span class="badge-green">● AI MODEL ACTIVE</span>
     <span class="badge-white">CNN • 128 x 128 • High Accuracy</span>
     <br>
-    <div class="creator-badge">✦ Developed by Abdul Rehman ✦</div>
+    <div class="creator-badge">Developed by Abdul Rehman</div>
 </div>
 """, unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
+# --- 4 CARDS - BILKUL WAISE HI ---
 c1, c2, c3, c4 = st.columns(4)
-with c1: st.markdown('<div class="card"><div class="card-icon">🔍</div><b>Early Detection</b><span>Detect Skin Issues Early</span></div>', unsafe_allow_html=True)
+with c1: st.markdown('<div class="card"><div class="card-icon">🔍</div><b>Early Detection</b><span>Detect at Early Stage</span></div>', unsafe_allow_html=True)
 with c2: st.markdown('<div class="card"><div class="card-icon">🧠</div><b>Smart AI</b><span>Deep Learning CNN</span></div>', unsafe_allow_html=True)
-with c3: st.markdown('<div class="card"><div class="card-icon">🔒</div><b>Safe & Private</b><span>Your Data Stays Private</span></div>', unsafe_allow_html=True)
-with c4: st.markdown('<div class="card"><div class="card-icon">📄</div><b>PDF Report</b><span>Download Instant Report</span></div>', unsafe_allow_html=True)
+with c3: st.markdown('<div class="card"><div class="card-icon">🛡️</div><b>Safe & Private</b><span>Your Data Stays Private</span></div>', unsafe_allow_html=True)
+with c4: st.markdown('<div class="card"><div class="card-icon">📄</div><b>PDF Report</b><span>Download PDF Report</span></div>', unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
 @st.cache_resource
 def load_my_model():
     return tf.keras.models.load_model('skin_cancer_cnn_model.keras')
-
 try:
     model = load_my_model()
 except Exception as e:
@@ -95,15 +110,13 @@ except Exception as e:
 def create_pdf_report(image_pil, result, confidence, filename):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_fill_color(4, 47, 46)
-    pdf.rect(0, 0, 210, 45, 'F')
-    pdf.set_text_color(255,255,255)
-    pdf.set_font("Helvetica","B",22)
+    pdf.set_fill_color(15, 118, 110); pdf.rect(0, 0, 210, 45, 'F')
+    pdf.set_text_color(255,255,255); pdf.set_font("Helvetica","B",22)
     pdf.set_xy(10,10); pdf.cell(190,10,"SkinSense AI",align="C")
-    pdf.set_font("Helvetica","",10)
-    pdf.set_xy(10,23); pdf.cell(190,8,"Early Detection | Benign vs Malignant | Powered by Deep Learning",align="C")
-    pdf.set_font("Helvetica","B",10); pdf.set_text_color(253,230,138)
-    pdf.set_xy(10,33); pdf.cell(190,8,"Developed by Abdul Rehman - AR",align="C")
+    pdf.set_font("Helvetica","",10); pdf.set_xy(10,23)
+    pdf.cell(190,8,"Early Detection Saves Lives | Benign vs Malignant",align="C")
+    pdf.set_font("Helvetica","B",10); pdf.set_text_color(245,158,11)
+    pdf.set_xy(10,33); pdf.cell(190,8,"Developed by Abdul Rehman",align="C")
     img_bytes = io.BytesIO(); image_pil.save(img_bytes, format="JPEG"); img_bytes.seek(0)
     pdf.image(img_bytes, x=65, y=55, w=80, h=80)
     y=145
@@ -126,18 +139,23 @@ def create_pdf_report(image_pil, result, confidence, filename):
     pdf.multi_cell(180,7,"Disclaimer: This report is for educational purposes only. It is not a final medical diagnosis. Please consult a Dermatologist.",border=1,fill=True,align="C")
     return bytes(pdf.output())
 
-st.markdown("### Upload Skin Lesion Image")
-st.caption("Upload a clear, close-up image of the skin lesion for best accuracy.")
-uploaded_file = st.file_uploader("", type=["jpg","jpeg","png"])
+# --- UPLOAD BOX - BILKUL WAISE HI ---
+st.markdown('<div class="upload-box"><div class="upload-title">📁 Upload Skin Lesion Image</div>', unsafe_allow_html=True)
+uploaded_file = st.file_uploader(" ", type=["jpg","jpeg","png"], label_visibility="collapsed")
+st.markdown('<div style="font-size:12px; color:#6B7280; margin-top:-8px;">200MB per file • JPG, PNG • Upload a clear, close-up image for best accuracy</div></div>', unsafe_allow_html=True)
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file).convert("RGB")
+    st.markdown("<br>", unsafe_allow_html=True)
     st.image(image, caption='Your Uploaded Image', use_container_width=True)
     resized_image = image.resize((128,128))
     img_array = np.array(resized_image)/255.0
     img_array = np.expand_dims(img_array, axis=0)
 
-    if st.button('🔍  Analyze Now'):
+    st.markdown('<div class="analyze-btn">', unsafe_allow_html=True)
+    analyze = st.button('🔍  Analyze Now')
+    st.markdown('</div>', unsafe_allow_html=True)
+    if analyze:
         with st.spinner('AI Analyzing...'):
             prediction = model.predict(img_array)[0][0]
         if prediction > 0.5:
@@ -149,15 +167,17 @@ if uploaded_file is not None:
         st.markdown("<br>", unsafe_allow_html=True)
         st.progress(int(confidence))
         st.session_state['pdf_report'] = create_pdf_report(image, result, confidence, uploaded_file.name)
+        st.download_button(label="📥  Download PDF Report", data=st.session_state['pdf_report'], file_name="SkinSense_AI_Report.pdf", mime="application/pdf")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button('🗑️ Clear Image'):
-            st.session_state.clear(); st.rerun()
-    with col2:
-        if 'pdf_report' in st.session_state:
-            st.download_button(label="📥  Download PDF Report", data=st.session_state['pdf_report'], file_name="SkinSense_AI_Report.pdf", mime="application/pdf")
+st.markdown("<br>", unsafe_allow_html=True)
+col1, col2 = st.columns(2)
+with col1:
+    if st.button('🗑️ Clear Image'):
+        st.session_state.clear(); st.rerun()
+with col2:
+    if st.button('ℹ️ How It Works'):
+        st.info("1. Upload Image → 2. AI Analyzes (CNN) → 3. Get Result + PDF Report")
 
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown('<div class="disclaimer">⚠️ Disclaimer: This tool is for educational purposes only. It is not a final medical diagnosis.</div>', unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center; color:#9CA3AF; font-size:12px; margin-top:12px;'>SkinSense AI • Developed by <b>Abdul Rehman</b> • Final Year Project</p>", unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
+st.markdown('<div class="disclaimer">⚠️ <b>Disclaimer:</b> This tool is for educational purposes only. It is not a final medical diagnosis.</div>', unsafe_allow_html=True)
+st.markdown('<div class="footer">Made with ❤️ by <b>Abdul Rehman</b><br><b>SkinSense AI</b> | Early Detection Saves Lives • Final Year Project</div>', unsafe_allow_html=True)
