@@ -50,7 +50,6 @@ st.markdown("""
     .result-benign { background: #E8F5E9; border: 2px solid #2E7D32; padding: 20px; border-radius: 16px; text-align: center; }
     .result-malignant { background: #FFEBEE; border: 2px solid #C62828; padding: 20px; border-radius: 16px; text-align: center; }
     .disclaimer { background: #FFF8E1; padding: 14px; border-radius: 14px; font-size: 12px; color: #6D4C00; border: 1px solid #FFE082; }
-    .upload-box { background: white; padding: 16px; border-radius: 16px; border: 2px dashed #CBD5E1; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -74,7 +73,7 @@ with c4: st.markdown('<div class="card">📄<b>Report</b><span>PDF Ready</span><
 
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("### 📤 Upload Skin Lesion Image")
-st.caption("صاف اور قریب سے لی ہوئی تصویر اپلوڈ کریں، بہترین رزلٹ کے لیے۔")
+st.caption("Upload a clear, close-up image of the skin lesion for best accuracy.")
 
 @st.cache_resource
 def load_my_model():
@@ -137,5 +136,5 @@ Note: Educational purpose only. Consult Dermatologist.
             st.button("📥  Download Report", disabled=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
-st.markdown('<div class="disclaimer">⚠️ <b>Disclaimer:</b> یہ ٹول صرف تعلیمی مقصد کے لیے ہے۔ فائنل تشخیص کے لیے ہمیشہ ڈرماٹولوجسٹ سے رجوع کریں۔</div>', unsafe_allow_html=True)
-st.markdown("<p style='text-align:center; color:#9CA3AF; font-size:12px; margin-top:16px;'>Skin Cancer AI • Final Year Project • Made with ❤️ using CNN</p>", unsafe_allow_html=True)
+st.markdown('<div class="disclaimer">⚠️ <b>Disclaimer:</b> This tool is for educational purposes only. Please consult a Dermatologist for final diagnosis.</div>', unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; color:#9CA3AF; font-size:12px; margin-top:16px;'>Skin Cancer AI • Final Year Project • Powered by CNN</p>", unsafe_allow_html=True)
