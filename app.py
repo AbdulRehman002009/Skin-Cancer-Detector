@@ -3,6 +3,8 @@ import tensorflow as tf
 from PIL import Image
 import numpy as np
 from datetime import datetime
+import io
+from fpdf import FPDF
 
 st.set_page_config(page_title="Skin Cancer AI - Professional", page_icon="🩺", layout="centered")
 
@@ -13,13 +15,21 @@ st.markdown("""
     
     .hero {
         background: linear-gradient(135deg, #050A14 0%, #0F2340 45%, #1A4D7A 100%);
-        padding: 36px 24px 28px 24px; border-radius: 22px;
+        padding: 32px 24px 28px 24px; border-radius: 24px;
         text-align: center; color: white;
         box-shadow: 0 15px 40px rgba(5,10,20,0.35);
         border: 1px solid rgba(255,255,255,0.1);
     }
-    .hero h1 { font-size: 32px; margin: 6px 0 0 0; color: white; letter-spacing: -0.5px; }
-    .hero p { font-size: 14px; opacity: 0.85; margin: 10px 0 0 0; }
+    .logo-circle {
+        width: 88px; height: 88px; margin: 0 auto;
+        background: linear-gradient(135deg, #00E676, #00B0FF);
+        border-radius: 50%; display: flex;
+        align-items: center; justify-content: center;
+        font-size: 44px; box-shadow: 0 0 0 5px rgba(255,255,255,0.12), 0 10px 25px rgba(0,230,118,0.4);
+        border: 2px solid white;
+    }
+    .hero h1 { font-size: 34px; margin: 14px 0 0 0; color: white; letter-spacing: -0.5px; font-weight: 900; }
+    .hero p { font-size: 14px; opacity: 0.85; margin: 8px 0 0 0; }
     .badge {
         display: inline-block; background: #00E676; color: #00210A;
         padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 900; margin-top: 16px;
@@ -36,10 +46,15 @@ st.markdown("""
         border: 1px solid rgba(255,215,0,0.3);
     }
     .card {
-        background: white; padding: 16px 10px; border-radius: 16px; text-align: center;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid #E8EDF3;
+        background: white; padding: 18px 8px 14px 8px; border-radius: 18px; text-align: center;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.07); border: 1px solid #E8EDF3;
+        transition: 0.2s;
     }
-    .card b { font-size: 14px; display: block; margin-top: 4px; }
+    .card-icon {
+        width: 44px; height: 44px; margin: 0 auto 8px auto; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center; font-size: 22px; color: white;
+    }
+    .card b { font-size: 14px; display: block; margin-top: 2px; color: #0F172A; }
     .card span { font-size: 11px; color: #6B7280; }
     div.stButton > button {
         width: 100% !important; border-radius: 14px !important;
@@ -59,9 +74,10 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# --- NEW PROFESSIONAL LOGO + HERO ---
 st.markdown("""
 <div class="hero">
-    <div style="font-size:48px;">🩺</div>
+    <div class="logo-circle">✚</div>
     <h1>Skin Cancer AI</h1>
     <p>Early Detection &nbsp;•&nbsp; Benign vs Malignant &nbsp;•&nbsp; Powered by Deep Learning</p>
     <span class="badge">● AI MODEL ACTIVE</span>
@@ -73,11 +89,12 @@ st.markdown("""
 
 st.markdown("<br>", unsafe_allow_html=True)
 
+# --- NEW ENGINEERED CARDS ---
 c1, c2, c3, c4 = st.columns(4)
-with c1: st.markdown('<div class="card">⚡<b>Fast</b><span>2 Sec Result</span></div>', unsafe_allow_html=True)
-with c2: st.markdown('<div class="card">🎯<b>Accurate</b><span>CNN Model</span></div>', unsafe_allow_html=True)
-with c3: st.markdown('<div class="card">🔒<b>Private</b><span>No Data Saved</span></div>', unsafe_allow_html=True)
-with c4: st.markdown('<div class="card">📄<b>Report</b><span>PDF Ready</span></div>', unsafe_allow_html=True)
+with c1: st.markdown('<div class="card"><div class="card-icon" style="background:linear-gradient(135deg,#FF9800,#FF5722);">⚡</div><b>Fast</b><span>2 Sec Result</span></div>', unsafe_allow_html=True)
+with c2: st.markdown('<div class="card"><div class="card-icon" style="background:linear-gradient(135deg,#2196F3,#0D47A1);">🎯</div><b>Accurate</b><span>CNN Model</span></div>', unsafe_allow_html=True)
+with c3: st.markdown('<div class="card"><div class="card-icon" style="background:linear-gradient(135deg,#4CAF50,#1B5E20);">🔒</div><b>Private</b><span>No Data Saved</span></div>', unsafe_allow_html=True)
+with c4: st.markdown('<div class="card"><div class="card-icon" style="background:linear-gradient(135deg,#9C27B0,#6A1B9A);">📄</div><b>PDF Report</b><span>Instant Download</span></div>', unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("### 📤 Upload Skin Lesion Image")
@@ -92,6 +109,84 @@ try:
 except Exception as e:
     st.error(f"Error loading model: {e}")
     st.stop()
+
+# --- PDF GENERATOR FUNCTION ---
+def create_pdf_report(image_pil, result, confidence, filename):
+    pdf = FPDF()
+    pdf.add_page()
+    # Header
+    pdf.set_fill_color(5, 10, 20)
+    pdf.rect(0, 0, 210, 45, 'F')
+    pdf.set_text_color(255, 255, 255)
+    pdf.set_font("Helvetica", "B", 22)
+    pdf.set_xy(10, 10)
+    pdf.cell(190, 10, "SKIN CANCER AI", align="C")
+    pdf.set_font("Helvetica", "", 11)
+    pdf.set_xy(10, 23)
+    pdf.cell(190, 8, "Early Detection  |  Benign vs Malignant  |  Powered by Deep Learning", align="C")
+    pdf.set_font("Helvetica", "B", 10)
+    pdf.set_text_color(255, 215, 0)
+    pdf.set_xy(10, 33)
+    pdf.cell(190, 8, "Developed by Abdul Rehman", align="C")
+
+    # Image
+    img_bytes = io.BytesIO()
+    image_pil.save(img_bytes, format="JPEG")
+    img_bytes.seek(0)
+    pdf.set_xy(65, 55)
+    pdf.image(img_bytes, x=65, y=55, w=80, h=80)
+
+    # Result Box
+    y = 145
+    if result == "Malignant":
+        pdf.set_fill_color(255, 235, 238)
+        pdf.set_draw_color(198, 40, 40)
+        pdf.set_text_color(198, 40, 40)
+        label = "MALIGNANT - Please Consult Doctor Immediately"
+    else:
+        pdf.set_fill_color(232, 245, 233)
+        pdf.set_draw_color(46, 125, 50)
+        pdf.set_text_color(46, 125, 50)
+        label = "BENIGN - No Cancer Detected"
+
+    pdf.set_xy(15, y)
+    pdf.set_font("Helvetica", "B", 16)
+    pdf.cell(180, 16, label, border=1, fill=True, align="C")
+
+    # Details
+    pdf.set_text_color(15, 23, 42)
+    pdf.set_font("Helvetica", "", 12)
+    details = [
+        ("Date & Time:", datetime.now().strftime('%d-%m-%Y  %H:%M')),
+        ("File Name:", filename),
+        ("Prediction:", result),
+        ("Confidence:", f"{confidence:.2f}%"),
+        ("Model:", "CNN (128 x 128)"),
+        ("Developed by:", "Abdul Rehman"),
+    ]
+    y += 28
+    for k, v in details:
+        pdf.set_xy(20, y)
+        pdf.set_font("Helvetica", "B", 12)
+        pdf.cell(45, 8, k)
+        pdf.set_font("Helvetica", "", 12)
+        pdf.cell(120, 8, v)
+        y += 10
+
+    # Disclaimer
+    y += 10
+    pdf.set_xy(15, y)
+    pdf.set_fill_color(255, 248, 225)
+    pdf.set_draw_color(255, 224, 130)
+    pdf.set_text_color(109, 76, 0)
+    pdf.set_font("Helvetica", "", 10)
+    pdf.multi_cell(180, 7, "Disclaimer: This report is for educational purposes only. This is not a final medical diagnosis. Please consult a Dermatologist for confirmation.", border=1, fill=True, align="C")
+
+    pdf.set_xy(10, 275)
+    pdf.set_text_color(156, 163, 175)
+    pdf.set_font("Helvetica", "", 9)
+    pdf.cell(190, 8, "Skin Cancer AI  |  Developed by Abdul Rehman  |  Final Year Project", align="C")
+    return bytes(pdf.output())
 
 uploaded_file = st.file_uploader("", type=["jpg", "jpeg", "png"], key="uploader")
 
@@ -120,17 +215,9 @@ if uploaded_file is not None:
         st.write(f"Confidence: {confidence:.1f}%")
         st.progress(int(confidence))
         
-        report_text = f"""SKIN CANCER AI - CLASSIFICATION REPORT
-
-Date: {datetime.now().strftime('%d-%m-%Y %H:%M')}
-File: {uploaded_file.name}
-Prediction: {result}
-Confidence: {confidence:.2f}%
-Model: CNN (128x128)
-Developed by: Abdul Rehman
-Note: Educational purpose only. Consult Dermatologist.
-"""
-        st.session_state['report'] = report_text
+        # Generate PDF and save in session
+        pdf_bytes = create_pdf_report(image, result, confidence, uploaded_file.name)
+        st.session_state['pdf_report'] = pdf_bytes
 
     st.markdown("---")
     col1, col2 = st.columns(2)
@@ -139,10 +226,10 @@ Note: Educational purpose only. Consult Dermatologist.
             st.session_state.clear()
             st.rerun()
     with col2:
-        if 'report' in st.session_state:
-            st.download_button(label="📥  Download Report", data=st.session_state['report'], file_name="skin_cancer_report.txt", mime="text/plain")
+        if 'pdf_report' in st.session_state:
+            st.download_button(label="📥  Download PDF Report", data=st.session_state['pdf_report'], file_name="skin_cancer_report.pdf", mime="application/pdf")
         else:
-            st.button("📥  Download Report", disabled=True)
+            st.button("📥  Download PDF Report", disabled=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown('<div class="disclaimer">⚠️ <b>Disclaimer:</b> This tool is for educational purposes only. Please consult a Dermatologist for final diagnosis.</div>', unsafe_allow_html=True)
