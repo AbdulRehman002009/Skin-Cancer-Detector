@@ -37,32 +37,26 @@ if "show_download" not in st.session_state:
 # =====================================================
 # --- PROFESSIONAL PDF REPORT - BILKUL REAL JESI ---
 # =====================================================
-# --- SIRF PDF LOGO - Ye naya function add kiya hai ---
 def draw_logo_on_pdf(c):
     # PDF header ke left side me naya logo - Neeche Skin, Upar Scanner
     x = 32
     y = 795
     c.saveState()
-    # Outer Circle - halki background
     c.setFillColor(HexColor("#F0FDF9"))
     c.setStrokeColor(HexColor("#14B8A6"))
     c.setLineWidth(1.2)
     c.circle(x+16, y+16, 15, stroke=1, fill=1)
-    # Scanner Upar Se
     c.setFillColor(HexColor("#0F766E"))
     c.roundRect(x+7, y+24, 18, 4.5, 2, stroke=0, fill=1)
     c.setFillColor(colors.white)
     c.circle(x+16, y+26.2, 1.1, stroke=0, fill=1)
-    # Scan Lines
     c.setStrokeColor(HexColor("#14B8A6"))
     c.setLineWidth(1)
     c.line(x+16, y+23, x+16, y+15)
-    # Skin Neeche
     c.setFillColor(HexColor("#F2C9A0"))
     c.setStrokeColor(HexColor("#E8A87C"))
     c.setLineWidth(0.7)
     c.circle(x+16, y+8, 5.5, stroke=1, fill=1)
-    # Mole / Til
     c.setFillColor(HexColor("#7C2D12"))
     c.circle(x+16, y+8, 2.2, stroke=0, fill=1)
     c.restoreState()
@@ -100,7 +94,6 @@ def create_pdf_report(result, confidence, risk):
     sRec = ParagraphStyle('Rec', fontName='Helvetica', fontSize=10.5, leading=15, textColor=BLACK, alignment=TA_LEFT)
     sFooter = ParagraphStyle('Footer', fontName='Helvetica', fontSize=8, leading=10, textColor=colors.white, alignment=TA_CENTER)
     sDisc = ParagraphStyle('Disc', fontName='Helvetica-Oblique', fontSize=8, leading=11, textColor=GREY, alignment=TA_CENTER)
-    # SIRF YAHAN SE EYE HATAYA HAI - Baqi same hai
     header_data = [
         [Paragraph("SkinSense AI", sTitle)],
         [Paragraph("Early Skin Cancer Detection &nbsp;|&nbsp; Benign vs Malignant &nbsp;|&nbsp; Powered by Deep Learning", sSub)],
@@ -202,7 +195,6 @@ def create_pdf_report(result, confidence, risk):
         ('BOTTOMPADDING', (0,0), (-1,-1), 10),
     ]))
     story.append(footer_table)
-    # SIRF YAHAN onFirstPage add kiya hai taake logo aaye - baqi same
     def on_page(canvas, doc):
         draw_logo_on_pdf(canvas)
     doc.build(story, onFirstPage=on_page, onLaterPages=on_page)
@@ -238,7 +230,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- SIRF YAHAN WEB LOGO BADLA HAI - Baqi header same hai ---
 st.markdown(f"""
 <div class="header-box">
     <div class="logo-circle">
@@ -359,15 +350,9 @@ if image is not None:
 
         st.markdown("---")
 
-        if not st.session_state.show_download:
-            if st.button("⬇️ Download PDF Report", use_container_width=True):
-                st.session_state.show_download = True
-                st.rerun()
-
-        if st.session_state.show_download:
-            pdf_buffer = create_pdf_report(result, conf, risk)
-            st.success("PDF Ready hai! Ab neeche wale button ko dabao, tabhi file download hogi 👇")
-            st.download_button("✅ Click Here to Save PDF", data=pdf_buffer, file_name="SkinSense_Report.pdf", mime="application/pdf", use_container_width=True)
+        # DIRECT DOWNLOAD - Ab koi dusra button nahi aayega
+        pdf_buffer = create_pdf_report(result, conf, risk)
+        st.download_button("⬇️ Download PDF Report", data=pdf_buffer, file_name="SkinSense_Report.pdf", mime="application/pdf", use_container_width=True)
 
 st.markdown(f"""
 <div style="background:#FFFBEB; padding:12px; border-radius:12px; margin-top:20px; text-align:center; font-size:12px; color:#92400E;">
