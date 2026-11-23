@@ -29,6 +29,12 @@ st.markdown("""
         padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-top: 16px; margin-left: 6px;
         border: 1px solid rgba(255,255,255,0.2);
     }
+    .creator {
+        margin-top: 18px; font-size: 14px; color: #FFD700;
+        background: rgba(255,255,255,0.08);
+        display: inline-block; padding: 8px 18px; border-radius: 20px;
+        border: 1px solid rgba(255,215,0,0.3);
+    }
     .card {
         background: white; padding: 16px 10px; border-radius: 16px; text-align: center;
         box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid #E8EDF3;
@@ -60,6 +66,8 @@ st.markdown("""
     <p>Early Detection &nbsp;•&nbsp; Benign vs Malignant &nbsp;•&nbsp; Powered by Deep Learning</p>
     <span class="badge">● AI MODEL ACTIVE</span>
     <span class="badge2">CNN • 128 x 128</span>
+    <br>
+    <div class="creator">👨‍💻 Developed by <b>Abdul Rehman</b></div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -119,6 +127,7 @@ File: {uploaded_file.name}
 Prediction: {result}
 Confidence: {confidence:.2f}%
 Model: CNN (128x128)
+Developed by: Abdul Rehman
 Note: Educational purpose only. Consult Dermatologist.
 """
         st.session_state['report'] = report_text
@@ -137,4 +146,4 @@ Note: Educational purpose only. Consult Dermatologist.
 
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown('<div class="disclaimer">⚠️ <b>Disclaimer:</b> This tool is for educational purposes only. Please consult a Dermatologist for final diagnosis.</div>', unsafe_allow_html=True)
-st.markdown("<p style='text-align:center; color:#9CA3AF; font-size:12px; margin-top:16px;'>Skin Cancer AI • Final Year Project • Powered by CNN</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; color:#9CA3AF; font-size:12px; margin-top:16px;'>Skin Cancer AI • Developed by <b>Abdul Rehman</b> • Final Year Project • Powered by CNN</p>", unsafe_allow_html=True)
