@@ -35,7 +35,7 @@ if "show_download" not in st.session_state:
     st.session_state.show_download = False
 
 # =====================================================
-# --- PROFESSIONAL PDF REPORT - IMPROVED ---
+# --- PROFESSIONAL PDF REPORT ---
 # =====================================================
 def draw_logo_on_pdf(c):
     x = 32
@@ -60,8 +60,7 @@ def draw_logo_on_pdf(c):
     c.circle(x+16, y+8, 2.2, stroke=0, fill=1)
     c.restoreState()
 
-# Ab isme patient_name, age, gender bhi aayega
-def create_pdf_report(result, confidence, risk, patient_name="Guest Patient", age="Not Given", gender="Not Specified"):
+def create_pdf_report(result, confidence, risk, patient_name="Not Provided", age="Not Provided", gender="Not Provided"):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0, bottomMargin=0, leftMargin=0, rightMargin=0)
     story = []
@@ -80,11 +79,12 @@ def create_pdf_report(result, confidence, risk, patient_name="Guest Patient", ag
     main_color = RED if is_malignant else GREEN
     main_bg = RED_BG if is_malignant else GREEN_BG
     result_text = "MALIGNANT - HIGH RISK" if is_malignant else "BENIGN - LOW RISK"
-    # Emoji khatam kar diye taake square na aaye
     advice = "Please consult a Dermatologist immediately. Early treatment is very important." if is_malignant else "Good News! It looks Benign. Still consult a doctor once for confirmation."
     next_step = "Visit Dermatologist within 2 days. Do not ignore." if is_malignant else "Routine checkup after 3 months. Keep monitoring your skin."
     date_str = datetime.now().strftime('%d %B %Y, %I:%M %p')
     report_id = f"SS-{datetime.now().strftime('%Y%m%d%H%M')}"
+    # Age display - agar Not Provided hai to waisa hi dikhayega
+    age_display = f"{age} Years Old" if age != "Not Provided" else "Not Provided"
     sTitle = ParagraphStyle('Title', fontName='Helvetica-Bold', fontSize=24, leading=28, textColor=colors.white, alignment=TA_CENTER)
     sSub = ParagraphStyle('Sub', fontName='Helvetica', fontSize=10, leading=13, textColor=HexColor("#CCFBF1"), alignment=TA_CENTER)
     sHeadSmall = ParagraphStyle('HeadSmall', fontName='Helvetica-Bold', fontSize=8, leading=10, textColor=colors.white, alignment=TA_CENTER)
@@ -116,12 +116,10 @@ def create_pdf_report(result, confidence, risk, patient_name="Guest Patient", ag
     ]))
     story.append(header_table)
     story.append(Spacer(1, 7*mm))
-
-    # ===== NAYA - PATIENT INFORMATION BOX =====
     story.append(Paragraph("PATIENT INFORMATION", sSection))
     patient_data = [
         [Paragraph("PATIENT NAME", sPatientLabel), Paragraph(f"{patient_name}", sPatientValue),
-         Paragraph("AGE", sPatientLabel), Paragraph(f"{age} Years Old", sPatientValue)],
+         Paragraph("AGE", sPatientLabel), Paragraph(f"{age_display}", sPatientValue)],
         [Paragraph("GENDER", sPatientLabel), Paragraph(f"{gender}", sPatientValue),
          Paragraph("REPORT ID", sPatientLabel), Paragraph(f"{report_id}", sPatientValue)],
         [Paragraph("REPORT DATE", sPatientLabel), Paragraph(f"{date_str}", sPatientValue),
@@ -139,7 +137,6 @@ def create_pdf_report(result, confidence, risk, patient_name="Guest Patient", ag
     ]))
     story.append(patient_table)
     story.append(Spacer(1, 6*mm))
-
     story.append(Paragraph("PREDICTION RESULT", sSection))
     result_data = [
         [Paragraph(f"{result_text}", sResult)],
@@ -162,7 +159,7 @@ def create_pdf_report(result, confidence, risk, patient_name="Guest Patient", ag
     bar_text = "█" * filled + "░" * (20 - filled)
     detail_data = [
         [Paragraph("Patient Name", sLabel), Paragraph(f"{patient_name}", sValueTeal)],
-        [Paragraph("Age", sLabel), Paragraph(f"{age} Years Old", sValue)],
+        [Paragraph("Age", sLabel), Paragraph(f"{age_display}", sValue)],
         [Paragraph("Prediction", sLabel), Paragraph(f"{result.upper()}", sValue)],
         [Paragraph("Confidence Score", sLabel), Paragraph(f"{confidence:.2f}%", sValue)],
         [Paragraph("Confidence Level", sLabel), Paragraph(f"{bar_text} &nbsp; {confidence:.0f}/100", ParagraphStyle('bar', fontName='Helvetica-Bold', fontSize=9, textColor=main_color))],
@@ -237,7 +234,12 @@ st.markdown("""
     button[data-testid="stFileUploaderDeleteBtn"] { width: 36px !important; min-width: 36px !important; background: #FEE2E2 !important; color: #DC2626 !important; }
     [data-testid="stImage"] img { width: 100% !important; max-height: 420px !important; object-fit: contain !important; border-radius: 14px; background: #F1F5F9; padding: 10px; }
     .image-box { background: white; border: 2px solid #CCFBF1; border-radius: 18px; padding: 14px; margin-top: 14px; }
-    .patient-box { background: white; border: 1.5px solid #CCFBF1; border-radius: 16px; padding: 16px; margin-top: 16px; }
+    .patient-box { background: white; border: 1px solid #E2E8F0; border-left: 5px solid #0F766E; border-radius: 16px; padding: 18px 18px 14px 18px; margin-top: 18px; box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
+    .patient-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .patient-title { font-size: 16px; font-weight: 800; color: #0F172A; }
+    .optional-badge { background: #F1F5F9; color: #64748B; border: 1px solid #E2E8F0; padding: 4px 11px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
+    .patient-sub { font-size: 12.5px; color: #64748B; line-height: 1.5; margin: 6px 0 14px 0; }
+    .patient-sub b { color: #0F766E; }
     .stButton > button { border-radius: 50px !important; font-weight: 700 !important; padding: 14px 20px !important; font-size: 16px !important; border: none !important; box-shadow: 0 8px 18px rgba(0,0,0,0.15) !important; }
     div[data-testid="stButton"] button[kind="primary"] { background: linear-gradient(135deg, #0F766E, #14B8A6) !important; color: white !important; font-size: 19px !important; padding: 16px !important; width: 100%; }
     .footer { text-align: center; color: #94A3B8; font-size: 12px; margin-top: 22px; }
@@ -365,25 +367,32 @@ if image is not None:
 
         st.markdown("---")
 
-        # ===== NAYA - PDF SE PEHLE NAME + AGE =====
-        st.markdown('<div class="patient-box">', unsafe_allow_html=True)
-        st.markdown("**📝 Patient Details for PDF Report**")
-        st.caption("Ye naam aur age tumhari PDF Report me likhi jayegi.")
+        # ===== PROFESSIONAL + OPTIONAL PATIENT FORM =====
+        st.markdown("""
+        <div class="patient-box">
+            <div class="patient-header">
+                <span class="patient-title">📝 Patient Details</span>
+                <span class="optional-badge">OPTIONAL</span>
+            </div>
+            <div class="patient-sub">Ye form <b>Optional</b> hai. Agar aap chahein to apna naam aur age likh dein, wo PDF Report me aa jayega. <b>Agar nahi likhna to khaali chhor dein, phir bhi Report ban jayegi.</b></div>
+        """, unsafe_allow_html=True)
         pc1, pc2 = st.columns(2)
         with pc1:
-            patient_name_input = st.text_input("Patient Name", value="", placeholder="e.g. Abdul Rehman")
+            patient_name_input = st.text_input("Patient Name (Optional)", value="", placeholder="e.g. Abdul Rehman")
         with pc2:
-            patient_age_input = st.number_input("Age (Years)", min_value=1, max_value=120, value=20)
-        patient_gender_input = st.selectbox("Gender", ["Male", "Female", "Other"])
-        st.markdown('</div>', unsafe_allow_html=True)
+            patient_age_input = st.number_input("Age - Years (Optional)", min_value=1, max_value=120, value=None, placeholder="e.g. 22")
+        patient_gender_input = st.selectbox("Gender (Optional)", ["Prefer not to say", "Male", "Female", "Other"])
+        st.markdown("</div>", unsafe_allow_html=True)
 
-        # Agar naam khaali hai to Guest likh dega, error nahi dega
-        final_name = patient_name_input.strip() if patient_name_input.strip() != "" else "Guest Patient"
-        final_age = str(patient_age_input)
+        # BACKEND - Sab Optional hai, khaali ho to Not Provided jayega
+        final_name = patient_name_input.strip() if patient_name_input and patient_name_input.strip() != "" else "Not Provided"
+        final_age = str(int(patient_age_input)) if patient_age_input is not None else "Not Provided"
+        final_gender = patient_gender_input if patient_gender_input != "Prefer not to say" else "Not Provided"
 
-        # DIRECT DOWNLOAD - Ek hi click me PDF download
-        pdf_buffer = create_pdf_report(result, conf, risk, final_name, final_age, patient_gender_input)
-        st.download_button("⬇️ Download PDF Report", data=pdf_buffer, file_name=f"SkinSense_Report_{final_name}.pdf", mime="application/pdf", use_container_width=True)
+        # File name ke liye - agar naam nahi hai to simple naam
+        file_suffix = final_name.replace(" ", "_") if final_name != "Not Provided" else "Report"
+        pdf_buffer = create_pdf_report(result, conf, risk, final_name, final_age, final_gender)
+        st.download_button("⬇️ Download PDF Report", data=pdf_buffer, file_name=f"SkinSense_{file_suffix}.pdf", mime="application/pdf", use_container_width=True)
 
 st.markdown(f"""
 <div style="background:#FFFBEB; padding:12px; border-radius:12px; margin-top:20px; text-align:center; font-size:12px; color:#92400E;">
