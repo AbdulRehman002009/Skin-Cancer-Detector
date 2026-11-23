@@ -6,77 +6,69 @@ from datetime import datetime
 import io
 from fpdf import FPDF
 
-st.set_page_config(page_title="SkinSense AI - Abdul Rehman", page_icon="👁️", layout="centered")
+st.set_page_config(page_title="SkinSense AI - Abdul Rehman", page_icon="✦", layout="centered")
 
 st.markdown("""
 <style>
-    .stApp { background: #F2F7F7; }
+    .stApp { background: #F0F4F8; }
     #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
-    
+
     .hero {
-        background: linear-gradient(135deg, #0F766E 0%, #14B8A6 50%, #06B6D4 100%);
-        padding: 28px 20px 22px 20px; border-radius: 20px;
+        background: linear-gradient(135deg, #042F2E 0%, #0F766E 45%, #14B8A6 100%);
+        padding: 30px 20px 24px 20px; border-radius: 24px;
         text-align: center; color: white;
-        box-shadow: 0 12px 30px rgba(20,184,166,0.35);
+        box-shadow: 0 15px 35px rgba(4,47,46,0.35);
+        border: 1px solid rgba(255,255,255,0.15);
+        position: relative; overflow: hidden;
     }
-    .logo-circle {
-        width: 72px; height: 72px; margin: 0 auto;
-        background: white; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 36px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    .hero::before {
+        content: ""; position: absolute; top: -60px; right: -60px;
+        width: 180px; height: 180px; background: rgba(255,255,255,0.08);
+        border-radius: 50%;
     }
-    .hero h1 { font-size: 32px; margin: 10px 0 0 0; color: white; font-weight: 900; }
-    .hero p { font-size: 13px; opacity: 0.95; margin: 6px 0 0 0; }
-    .badge-green {
-        display: inline-block; background: #FEF08A; color: #14532D;
-        padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; margin-top: 12px;
+    /* APNA LOGO - AR MONOGRAM */
+    .my-logo {
+        width: 82px; height: 82px; margin: 0 auto; position: relative; z-index: 2;
+        background: linear-gradient(135deg, #F59E0B, #FDE68A);
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        font-size: 32px; font-weight: 900; color: #042F2E;
+        border: 3px solid white;
+        box-shadow: 0 10px 25px rgba(245,158,11,0.5);
+        letter-spacing: -1px;
     }
-    .badge-white {
-        display: inline-block; background: rgba(255,255,255,0.25); color: white;
-        padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-top: 12px; margin-left: 5px;
-        border: 1px solid rgba(255,255,255,0.4);
-    }
+    .my-logo span { font-size: 14px; position: absolute; top: -6px; right: -2px; background: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #0F766E; font-size: 16px; font-weight: 900; }
+    .hero h1 { font-size: 34px; margin: 14px 0 0 0; color: white; font-weight: 900; letter-spacing: -0.5px; position: relative; z-index: 2; }
+    .hero h1 span { color: #FDE68A; }
+    .hero p { font-size: 13px; opacity: 0.9; margin: 6px 0 0 0; position: relative; z-index: 2; }
+    .badge-green { display: inline-block; background: #CCFBF1; color: #134E4A; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 800; margin-top: 14px; position: relative; z-index: 2; }
+    .badge-white { display: inline-block; background: rgba(255,255,255,0.18); color: white; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-top: 14px; margin-left: 6px; border: 1px solid rgba(255,255,255,0.3); position: relative; z-index: 2; }
     .creator-badge {
-        background: #F59E0B; color: white; font-weight: 800; font-size: 13px;
-        padding: 8px 20px; border-radius: 20px; display: inline-block; margin-top: 14px;
-        box-shadow: 0 5px 15px rgba(245,158,11,0.4);
+        background: linear-gradient(90deg, #F59E0B, #F97316); color: white; font-weight: 800; font-size: 13px;
+        padding: 9px 22px; border-radius: 20px; display: inline-block; margin-top: 16px;
+        box-shadow: 0 6px 18px rgba(249,115,22,0.4); position: relative; z-index: 2;
     }
-    .card {
-        background: white; padding: 16px 6px 12px 6px; border-radius: 16px; text-align: center;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.05); border: 1px solid #E5E7EB;
-    }
+    .card { background: white; padding: 16px 6px 12px 6px; border-radius: 16px; text-align: center; box-shadow: 0 4px 14px rgba(0,0,0,0.06); border: 1px solid #E5E7EB; }
     .card-icon { font-size: 26px; margin-bottom: 4px; }
     .card b { font-size: 13px; display: block; color: #111827; }
-    .card span { font-size: 10.5px; color: #6B7280; line-height: 1.3; display: block; margin-top: 2px; }
-    .upload-box {
-        background: white; border: 2px dashed #CBD5E1; border-radius: 16px;
-        padding: 14px; text-align: center;
-    }
-    div.stButton > button {
-        width: 100% !important; border-radius: 12px !important;
-        padding: 13px !important; font-weight: 800 !important; font-size: 15px !important;
-        background: #14B8A6 !important; color: white !important; border: none !important;
-    }
-    div.stDownloadButton > button {
-        width: 100% !important; border-radius: 12px !important; padding: 13px !important;
-        font-weight: 700 !important; font-size: 14px !important;
-        background: white !important; color: #0F766E !important; border: 2px solid #14B8A6 !important;
-    }
+    .card span { font-size: 10.5px; color: #6B7280; display: block; margin-top: 2px; }
+    div.stButton > button { width: 100% !important; border-radius: 12px !important; padding: 13px !important; font-weight: 800 !important; font-size: 15px !important; background: linear-gradient(90deg, #0F766E, #14B8A6) !important; color: white !important; border: none !important; }
+    div.stDownloadButton > button { width: 100% !important; border-radius: 12px !important; padding: 13px !important; font-weight: 700 !important; font-size: 14px !important; background: white !important; color: #0F766E !important; border: 2px solid #14B8A6 !important; }
     .result-benign { background: #ECFDF5; border: 1px solid #6EE7B7; padding: 16px; border-radius: 14px; }
     .result-malignant { background: #FEF2F2; border: 1px solid #FCA5A5; padding: 16px; border-radius: 14px; }
     .disclaimer { background: #FFFBEB; padding: 12px; border-radius: 12px; font-size: 11px; color: #92400E; border: 1px solid #FDE68A; text-align: center; }
 </style>
 """, unsafe_allow_html=True)
 
+# --- HERO WITH APNA LOGO ---
 st.markdown("""
 <div class="hero">
-    <div class="logo-circle">👁️</div>
-    <h1>SkinSense AI</h1>
+    <div class="my-logo">AR<span>+</span></div>
+    <h1>Skin<span>Sense</span> AI</h1>
     <p>Early Skin Cancer Detection • Benign vs Malignant • Powered by Deep Learning</p>
     <span class="badge-green">● AI MODEL ACTIVE</span>
     <span class="badge-white">CNN • 128 x 128 • High Accuracy</span>
     <br>
-    <div class="creator-badge">Developed by Abdul Rehman</div>
+    <div class="creator-badge">✦ Developed by Abdul Rehman ✦</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -100,29 +92,20 @@ except Exception as e:
     st.error(f"Error loading model: {e}")
     st.stop()
 
-# --- PDF FUNCTION ---
 def create_pdf_report(image_pil, result, confidence, filename):
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_fill_color(15, 118, 110)
+    pdf.set_fill_color(4, 47, 46)
     pdf.rect(0, 0, 210, 45, 'F')
     pdf.set_text_color(255,255,255)
     pdf.set_font("Helvetica","B",22)
-    pdf.set_xy(10,10)
-    pdf.cell(190,10,"SkinSense AI",align="C")
+    pdf.set_xy(10,10); pdf.cell(190,10,"SkinSense AI",align="C")
     pdf.set_font("Helvetica","",10)
-    pdf.set_xy(10,23)
-    pdf.cell(190,8,"Early Detection | Benign vs Malignant | Powered by Deep Learning",align="C")
-    pdf.set_font("Helvetica","B",10)
-    pdf.set_text_color(245,158,11)
-    pdf.set_xy(10,33)
-    pdf.cell(190,8,"Developed by Abdul Rehman",align="C")
-
-    img_bytes = io.BytesIO()
-    image_pil.save(img_bytes, format="JPEG")
-    img_bytes.seek(0)
+    pdf.set_xy(10,23); pdf.cell(190,8,"Early Detection | Benign vs Malignant | Powered by Deep Learning",align="C")
+    pdf.set_font("Helvetica","B",10); pdf.set_text_color(253,230,138)
+    pdf.set_xy(10,33); pdf.cell(190,8,"Developed by Abdul Rehman - AR",align="C")
+    img_bytes = io.BytesIO(); image_pil.save(img_bytes, format="JPEG"); img_bytes.seek(0)
     pdf.image(img_bytes, x=65, y=55, w=80, h=80)
-
     y=145
     if result=="Malignant":
         pdf.set_fill_color(254,242,242); pdf.set_draw_color(248,113,113); pdf.set_text_color(185,28,28)
@@ -130,9 +113,7 @@ def create_pdf_report(image_pil, result, confidence, filename):
     else:
         pdf.set_fill_color(236,253,245); pdf.set_draw_color(110,231,183); pdf.set_text_color(4,120,87)
         label="BENIGN - No Cancer Detected"
-    pdf.set_xy(15,y); pdf.set_font("Helvetica","B",15)
-    pdf.cell(180,15,label,border=1,fill=True,align="C")
-
+    pdf.set_xy(15,y); pdf.set_font("Helvetica","B",15); pdf.cell(180,15,label,border=1,fill=True,align="C")
     pdf.set_text_color(15,23,42)
     details=[("Date & Time:",datetime.now().strftime('%d-%m-%Y %H:%M')),("File Name:",filename),("Prediction:",result),("Confidence:",f"{confidence:.2f}%"),("Model:","CNN (128x128)"),("Developed by:","Abdul Rehman")]
     y+=28
@@ -147,7 +128,6 @@ def create_pdf_report(image_pil, result, confidence, filename):
 
 st.markdown("### Upload Skin Lesion Image")
 st.caption("Upload a clear, close-up image of the skin lesion for best accuracy.")
-
 uploaded_file = st.file_uploader("", type=["jpg","jpeg","png"])
 
 if uploaded_file is not None:
