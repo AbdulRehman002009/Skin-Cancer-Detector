@@ -37,6 +37,36 @@ if "show_download" not in st.session_state:
 # =====================================================
 # --- PROFESSIONAL PDF REPORT - BILKUL REAL JESI ---
 # =====================================================
+# --- SIRF PDF LOGO - Ye naya function add kiya hai ---
+def draw_logo_on_pdf(c):
+    # PDF header ke left side me naya logo - Neeche Skin, Upar Scanner
+    x = 32
+    y = 795
+    c.saveState()
+    # Outer Circle - halki background
+    c.setFillColor(HexColor("#F0FDF9"))
+    c.setStrokeColor(HexColor("#14B8A6"))
+    c.setLineWidth(1.2)
+    c.circle(x+16, y+16, 15, stroke=1, fill=1)
+    # Scanner Upar Se
+    c.setFillColor(HexColor("#0F766E"))
+    c.roundRect(x+7, y+24, 18, 4.5, 2, stroke=0, fill=1)
+    c.setFillColor(colors.white)
+    c.circle(x+16, y+26.2, 1.1, stroke=0, fill=1)
+    # Scan Lines
+    c.setStrokeColor(HexColor("#14B8A6"))
+    c.setLineWidth(1)
+    c.line(x+16, y+23, x+16, y+15)
+    # Skin Neeche
+    c.setFillColor(HexColor("#F2C9A0"))
+    c.setStrokeColor(HexColor("#E8A87C"))
+    c.setLineWidth(0.7)
+    c.circle(x+16, y+8, 5.5, stroke=1, fill=1)
+    # Mole / Til
+    c.setFillColor(HexColor("#7C2D12"))
+    c.circle(x+16, y+8, 2.2, stroke=0, fill=1)
+    c.restoreState()
+
 def create_pdf_report(result, confidence, risk):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0, bottomMargin=0, leftMargin=0, rightMargin=0)
@@ -70,8 +100,9 @@ def create_pdf_report(result, confidence, risk):
     sRec = ParagraphStyle('Rec', fontName='Helvetica', fontSize=10.5, leading=15, textColor=BLACK, alignment=TA_LEFT)
     sFooter = ParagraphStyle('Footer', fontName='Helvetica', fontSize=8, leading=10, textColor=colors.white, alignment=TA_CENTER)
     sDisc = ParagraphStyle('Disc', fontName='Helvetica-Oblique', fontSize=8, leading=11, textColor=GREY, alignment=TA_CENTER)
+    # SIRF YAHAN SE EYE HATAYA HAI - Baqi same hai
     header_data = [
-        [Paragraph("👁️ SkinSense AI", sTitle)],
+        [Paragraph("SkinSense AI", sTitle)],
         [Paragraph("Early Skin Cancer Detection &nbsp;|&nbsp; Benign vs Malignant &nbsp;|&nbsp; Powered by Deep Learning", sSub)],
         [Paragraph(f"DEVELOPED BY {DEVELOPER_NAME.upper()} &nbsp;•&nbsp; FINAL YEAR PROJECT", sHeadSmall)],
     ]
@@ -171,7 +202,10 @@ def create_pdf_report(result, confidence, risk):
         ('BOTTOMPADDING', (0,0), (-1,-1), 10),
     ]))
     story.append(footer_table)
-    doc.build(story)
+    # SIRF YAHAN onFirstPage add kiya hai taake logo aaye - baqi same
+    def on_page(canvas, doc):
+        draw_logo_on_pdf(canvas)
+    doc.build(story, onFirstPage=on_page, onLaterPages=on_page)
     buffer.seek(0)
     return buffer
 
@@ -180,7 +214,7 @@ st.markdown("""
 <style>
     .main { background-color: #F8FAFC; }
     .header-box { background: linear-gradient(135deg, #020617 0%, #0F766E 60%, #14B8A6 100%); padding: 32px 25px 26px 25px; border-radius: 22px; color: white; text-align: center; box-shadow: 0 15px 30px rgba(0,0,0,0.22); margin-bottom: 18px; }
-    .logo-circle { background: white; width: 82px; height: 82px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; font-size: 42px; }
+    .logo-circle { background: white; width: 82px; height: 82px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; }
     .header-box h1 { color: white !important; font-size: 40px; margin: 0; }
     .header-box h1 span { color: #5EEAD4; }
     .header-box p { color: #CCFBF1 !important; font-size: 15px; margin-top: 6px; }
@@ -204,9 +238,22 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# --- SIRF YAHAN WEB LOGO BADLA HAI - Baqi header same hai ---
 st.markdown(f"""
 <div class="header-box">
-    <div class="logo-circle">👁️</div>
+    <div class="logo-circle">
+        <svg width="62" height="62" viewBox="0 0 64 64" fill="none">
+          <circle cx="32" cy="32" r="30" fill="#F0FDF9" stroke="#14B8A6" stroke-width="2"/>
+          <rect x="18" y="6" width="28" height="9" rx="4.5" fill="#0F766E"/>
+          <circle cx="32" cy="10.5" r="2" fill="white"/>
+          <line x1="24" y1="18" x2="24" y2="34" stroke="#14B8A6" stroke-width="2" stroke-dasharray="3 3"/>
+          <line x1="32" y1="18" x2="32" y2="36" stroke="#0F766E" stroke-width="2.5"/>
+          <line x1="40" y1="18" x2="40" y2="34" stroke="#14B8A6" stroke-width="2" stroke-dasharray="3 3"/>
+          <path d="M12 40 Q32 34 52 40 L52 52 Q32 58 12 52 Z" fill="#F2C9A0" stroke="#E8A87C" stroke-width="1.5"/>
+          <circle cx="32" cy="46" r="4.5" fill="#7C2D12"/>
+          <circle cx="32" cy="46" r="8" fill="none" stroke="#0F766E" stroke-width="1.5" stroke-dasharray="3 2"/>
+        </svg>
+    </div>
     <h1>Skin<span>Sense</span> AI</h1>
     <p>Early Skin Cancer Detection • Benign vs Malignant • Powered by Deep Learning</p>
     <br>
