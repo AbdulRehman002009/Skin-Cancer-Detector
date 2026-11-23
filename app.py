@@ -35,10 +35,9 @@ if "show_download" not in st.session_state:
     st.session_state.show_download = False
 
 # =====================================================
-# --- PROFESSIONAL PDF REPORT - BILKUL REAL JESI ---
+# --- PROFESSIONAL PDF REPORT - IMPROVED ---
 # =====================================================
 def draw_logo_on_pdf(c):
-    # PDF header ke left side me naya logo - Neeche Skin, Upar Scanner
     x = 32
     y = 795
     c.saveState()
@@ -61,7 +60,8 @@ def draw_logo_on_pdf(c):
     c.circle(x+16, y+8, 2.2, stroke=0, fill=1)
     c.restoreState()
 
-def create_pdf_report(result, confidence, risk):
+# Ab isme patient_name, age, gender bhi aayega
+def create_pdf_report(result, confidence, risk, patient_name="Guest Patient", age="Not Given", gender="Not Specified"):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0, bottomMargin=0, leftMargin=0, rightMargin=0)
     story = []
@@ -72,15 +72,17 @@ def create_pdf_report(result, confidence, risk):
     RED = HexColor("#DC2626")
     RED_BG = HexColor("#FEE2E2")
     ORANGE = HexColor("#F59E0B")
-    GREY = HexColor("#64748B")
+    GREY = HexColor("#475569")
     LIGHT_GREY = HexColor("#F1F5F9")
     BLACK = HexColor("#0F172A")
+    DARK_TEAL = HexColor("#134E4A")
     is_malignant = result == "Malignant"
     main_color = RED if is_malignant else GREEN
     main_bg = RED_BG if is_malignant else GREEN_BG
     result_text = "MALIGNANT - HIGH RISK" if is_malignant else "BENIGN - LOW RISK"
-    result_icon = "⚠️" if is_malignant else "✅"
+    # Emoji khatam kar diye taake square na aaye
     advice = "Please consult a Dermatologist immediately. Early treatment is very important." if is_malignant else "Good News! It looks Benign. Still consult a doctor once for confirmation."
+    next_step = "Visit Dermatologist within 2 days. Do not ignore." if is_malignant else "Routine checkup after 3 months. Keep monitoring your skin."
     date_str = datetime.now().strftime('%d %B %Y, %I:%M %p')
     report_id = f"SS-{datetime.now().strftime('%Y%m%d%H%M')}"
     sTitle = ParagraphStyle('Title', fontName='Helvetica-Bold', fontSize=24, leading=28, textColor=colors.white, alignment=TA_CENTER)
@@ -89,11 +91,15 @@ def create_pdf_report(result, confidence, risk):
     sSection = ParagraphStyle('Section', fontName='Helvetica-Bold', fontSize=13, leading=16, textColor=TEAL, alignment=TA_LEFT, spaceAfter=6)
     sLabel = ParagraphStyle('Label', fontName='Helvetica', fontSize=10, leading=13, textColor=GREY, alignment=TA_LEFT)
     sValue = ParagraphStyle('Value', fontName='Helvetica-Bold', fontSize=11, leading=14, textColor=BLACK, alignment=TA_LEFT)
+    sValueTeal = ParagraphStyle('ValueTeal', fontName='Helvetica-Bold', fontSize=11, leading=14, textColor=DARK_TEAL, alignment=TA_LEFT)
     sResult = ParagraphStyle('Result', fontName='Helvetica-Bold', fontSize=22, leading=26, textColor=main_color, alignment=TA_CENTER)
     sConf = ParagraphStyle('Conf', fontName='Helvetica-Bold', fontSize=11, leading=14, textColor=BLACK, alignment=TA_CENTER)
     sRec = ParagraphStyle('Rec', fontName='Helvetica', fontSize=10.5, leading=15, textColor=BLACK, alignment=TA_LEFT)
     sFooter = ParagraphStyle('Footer', fontName='Helvetica', fontSize=8, leading=10, textColor=colors.white, alignment=TA_CENTER)
     sDisc = ParagraphStyle('Disc', fontName='Helvetica-Oblique', fontSize=8, leading=11, textColor=GREY, alignment=TA_CENTER)
+    sPatientLabel = ParagraphStyle('PL', fontName='Helvetica-Bold', fontSize=9, leading=11, textColor=HexColor("#0F766E"), alignment=TA_LEFT)
+    sPatientValue = ParagraphStyle('PV', fontName='Helvetica-Bold', fontSize=11, leading=14, textColor=BLACK, alignment=TA_LEFT)
+
     header_data = [
         [Paragraph("SkinSense AI", sTitle)],
         [Paragraph("Early Skin Cancer Detection &nbsp;|&nbsp; Benign vs Malignant &nbsp;|&nbsp; Powered by Deep Learning", sSub)],
@@ -109,28 +115,34 @@ def create_pdf_report(result, confidence, risk):
         ('LINEBELOW', (0,-1), (-1,-1), 4, TEAL),
     ]))
     story.append(header_table)
-    story.append(Spacer(1, 8*mm))
-    info_data = [
-        [Paragraph("<b>Report Date</b>", sLabel), Paragraph(f"<b>{date_str}</b>", sValue),
-         Paragraph("<b>Report ID</b>", sLabel), Paragraph(f"<b>{report_id}</b>", sValue)],
-        [Paragraph("<b>Patient Type</b>", sLabel), Paragraph("<b>General Checkup</b>", sValue),
-         Paragraph("<b>Model</b>", sLabel), Paragraph("<b>CNN | 128 x 128</b>", sValue)],
+    story.append(Spacer(1, 7*mm))
+
+    # ===== NAYA - PATIENT INFORMATION BOX =====
+    story.append(Paragraph("PATIENT INFORMATION", sSection))
+    patient_data = [
+        [Paragraph("PATIENT NAME", sPatientLabel), Paragraph(f"{patient_name}", sPatientValue),
+         Paragraph("AGE", sPatientLabel), Paragraph(f"{age} Years Old", sPatientValue)],
+        [Paragraph("GENDER", sPatientLabel), Paragraph(f"{gender}", sPatientValue),
+         Paragraph("REPORT ID", sPatientLabel), Paragraph(f"{report_id}", sPatientValue)],
+        [Paragraph("REPORT DATE", sPatientLabel), Paragraph(f"{date_str}", sPatientValue),
+         Paragraph("MODEL", sPatientLabel), Paragraph("CNN | 128 x 128", sPatientValue)],
     ]
-    info_table = Table(info_data, colWidths=[30*mm, 55*mm, 30*mm, 55*mm])
-    info_table.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), LIGHT_GREY),
-        ('BOX', (0,0), (-1,-1), 0.5, HexColor("#E2E8F0")),
-        ('INNERGRID', (0,0), (-1,-1), 0.5, HexColor("#E2E8F0")),
+    patient_table = Table(patient_data, colWidths=[28*mm, 62*mm, 28*mm, 52*mm])
+    patient_table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), HexColor("#F0FDF9")),
+        ('BOX', (0,0), (-1,-1), 1, TEAL),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, HexColor("#CCFBF1")),
         ('TOPPADDING', (0,0), (-1,-1), 7),
         ('BOTTOMPADDING', (0,0), (-1,-1), 7),
         ('LEFTPADDING', (0,0), (-1,-1), 8),
-        ('ROUNDEDCORNERS', [6,6,6,6]),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
     ]))
-    story.append(info_table)
-    story.append(Spacer(1, 7*mm))
+    story.append(patient_table)
+    story.append(Spacer(1, 6*mm))
+
     story.append(Paragraph("PREDICTION RESULT", sSection))
     result_data = [
-        [Paragraph(f"{result_icon} &nbsp; {result_text}", sResult)],
+        [Paragraph(f"{result_text}", sResult)],
         [Paragraph(f"Confidence: {confidence:.2f}% &nbsp;&nbsp; | &nbsp;&nbsp; Risk Level: {risk}", sConf)],
     ]
     result_table = Table(result_data, colWidths=[170*mm])
@@ -149,10 +161,12 @@ def create_pdf_report(result, confidence, risk):
     filled = int(confidence / 5)
     bar_text = "█" * filled + "░" * (20 - filled)
     detail_data = [
+        [Paragraph("Patient Name", sLabel), Paragraph(f"{patient_name}", sValueTeal)],
+        [Paragraph("Age", sLabel), Paragraph(f"{age} Years Old", sValue)],
         [Paragraph("Prediction", sLabel), Paragraph(f"{result.upper()}", sValue)],
         [Paragraph("Confidence Score", sLabel), Paragraph(f"{confidence:.2f}%", sValue)],
         [Paragraph("Confidence Level", sLabel), Paragraph(f"{bar_text} &nbsp; {confidence:.0f}/100", ParagraphStyle('bar', fontName='Helvetica-Bold', fontSize=9, textColor=main_color))],
-        [Paragraph("Risk Level", sLabel), Paragraph(f"{risk.upper()} {'🔴' if is_malignant else '🟢'}", ParagraphStyle('risk', fontName='Helvetica-Bold', fontSize=11, textColor=main_color))],
+        [Paragraph("Risk Level", sLabel), Paragraph(f"{risk.upper()} - {'HIGH RISK' if is_malignant else 'LOW RISK'}", ParagraphStyle('risk', fontName='Helvetica-Bold', fontSize=11, textColor=main_color))],
         [Paragraph("AI Model", sLabel), Paragraph("Convolutional Neural Network (CNN)", sValue)],
         [Paragraph("Image Size", sLabel), Paragraph("128 x 128 Pixels", sValue)],
         [Paragraph("Analysis Type", sLabel), Paragraph("Benign vs Malignant Classification", sValue)],
@@ -170,7 +184,7 @@ def create_pdf_report(result, confidence, risk):
     story.append(detail_table)
     story.append(Spacer(1, 6*mm))
     story.append(Paragraph("DOCTOR'S RECOMMENDATION", sSection))
-    rec_data = [[Paragraph(f"<b>💡 Recommendation:</b> {advice}", sRec)]]
+    rec_data = [[Paragraph(f"<b>Recommendation:</b> {advice}<br/><b>Next Step:</b> {next_step}", sRec)]]
     rec_table = Table(rec_data, colWidths=[170*mm])
     rec_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), HexColor("#FFFBEB")),
@@ -185,7 +199,7 @@ def create_pdf_report(result, confidence, risk):
     story.append(Spacer(1, 8*mm))
     story.append(HRFlowable(width="100%", thickness=0.5, color=HexColor("#E2E8F0")))
     story.append(Spacer(1, 4*mm))
-    story.append(Paragraph("⚠️ Disclaimer: This report is generated by AI for educational purposes only. It is NOT a final medical diagnosis. Please consult a qualified Dermatologist for proper examination.", sDisc))
+    story.append(Paragraph("Disclaimer: This report is generated by AI for educational purposes only. It is NOT a final medical diagnosis. Please consult a qualified Dermatologist for proper examination.", sDisc))
     story.append(Spacer(1, 6*mm))
     footer_data = [[Paragraph(f"SkinSense AI &nbsp;|&nbsp; Developed by <b>{DEVELOPER_NAME}</b> &nbsp;|&nbsp; Early Detection Saves Lives", sFooter)]]
     footer_table = Table(footer_data, colWidths=[210*mm])
@@ -223,6 +237,7 @@ st.markdown("""
     button[data-testid="stFileUploaderDeleteBtn"] { width: 36px !important; min-width: 36px !important; background: #FEE2E2 !important; color: #DC2626 !important; }
     [data-testid="stImage"] img { width: 100% !important; max-height: 420px !important; object-fit: contain !important; border-radius: 14px; background: #F1F5F9; padding: 10px; }
     .image-box { background: white; border: 2px solid #CCFBF1; border-radius: 18px; padding: 14px; margin-top: 14px; }
+    .patient-box { background: white; border: 1.5px solid #CCFBF1; border-radius: 16px; padding: 16px; margin-top: 16px; }
     .stButton > button { border-radius: 50px !important; font-weight: 700 !important; padding: 14px 20px !important; font-size: 16px !important; border: none !important; box-shadow: 0 8px 18px rgba(0,0,0,0.15) !important; }
     div[data-testid="stButton"] button[kind="primary"] { background: linear-gradient(135deg, #0F766E, #14B8A6) !important; color: white !important; font-size: 19px !important; padding: 16px !important; width: 100%; }
     .footer { text-align: center; color: #94A3B8; font-size: 12px; margin-top: 22px; }
@@ -350,9 +365,25 @@ if image is not None:
 
         st.markdown("---")
 
-        # DIRECT DOWNLOAD - Ab koi dusra button nahi aayega
-        pdf_buffer = create_pdf_report(result, conf, risk)
-        st.download_button("⬇️ Download PDF Report", data=pdf_buffer, file_name="SkinSense_Report.pdf", mime="application/pdf", use_container_width=True)
+        # ===== NAYA - PDF SE PEHLE NAME + AGE =====
+        st.markdown('<div class="patient-box">', unsafe_allow_html=True)
+        st.markdown("**📝 Patient Details for PDF Report**")
+        st.caption("Ye naam aur age tumhari PDF Report me likhi jayegi.")
+        pc1, pc2 = st.columns(2)
+        with pc1:
+            patient_name_input = st.text_input("Patient Name", value="", placeholder="e.g. Abdul Rehman")
+        with pc2:
+            patient_age_input = st.number_input("Age (Years)", min_value=1, max_value=120, value=20)
+        patient_gender_input = st.selectbox("Gender", ["Male", "Female", "Other"])
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        # Agar naam khaali hai to Guest likh dega, error nahi dega
+        final_name = patient_name_input.strip() if patient_name_input.strip() != "" else "Guest Patient"
+        final_age = str(patient_age_input)
+
+        # DIRECT DOWNLOAD - Ek hi click me PDF download
+        pdf_buffer = create_pdf_report(result, conf, risk, final_name, final_age, patient_gender_input)
+        st.download_button("⬇️ Download PDF Report", data=pdf_buffer, file_name=f"SkinSense_Report_{final_name}.pdf", mime="application/pdf", use_container_width=True)
 
 st.markdown(f"""
 <div style="background:#FFFBEB; padding:12px; border-radius:12px; margin-top:20px; text-align:center; font-size:12px; color:#92400E;">
