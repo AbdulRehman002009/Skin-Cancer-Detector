@@ -83,7 +83,6 @@ def create_pdf_report(result, confidence, risk, patient_name="Not Provided", age
     next_step = "Visit Dermatologist within 2 days. Do not ignore." if is_malignant else "Routine checkup after 3 months. Keep monitoring your skin."
     date_str = datetime.now().strftime('%d %B %Y, %I:%M %p')
     report_id = f"SS-{datetime.now().strftime('%Y%m%d%H%M')}"
-    # Age display - agar Not Provided hai to waisa hi dikhayega
     age_display = f"{age} Years Old" if age != "Not Provided" else "Not Provided"
     sTitle = ParagraphStyle('Title', fontName='Helvetica-Bold', fontSize=24, leading=28, textColor=colors.white, alignment=TA_CENTER)
     sSub = ParagraphStyle('Sub', fontName='Helvetica', fontSize=10, leading=13, textColor=HexColor("#CCFBF1"), alignment=TA_CENTER)
@@ -240,6 +239,22 @@ st.markdown("""
     .optional-badge { background: #F1F5F9; color: #64748B; border: 1px solid #E2E8F0; padding: 4px 11px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
     .patient-sub { font-size: 12.5px; color: #64748B; line-height: 1.5; margin: 6px 0 14px 0; }
     .patient-sub b { color: #0F766E; }
+
+    /* ===== PATIENT FIELDS - HIGHLIGHT + STYLE ===== */
+    div[data-testid="stTextInput"] label, div[data-testid="stNumberInput"] label, div[data-testid="stSelectbox"] label { font-weight: 800 !important; color: #0F172A !important; font-size: 13.5px !important; }
+    div[data-testid="stTextInput"] label span, div[data-testid="stNumberInput"] label span, div[data-testid="stSelectbox"] label span { color: #0F766E !important; font-weight: 700 !important; }
+    div[data-testid="stTextInput"] input, div[data-testid="stNumberInput"] input { border: 1.8px solid #CBD5E1 !important; border-radius: 12px !important; padding: 10px 12px !important; background: #F8FAFC !important; font-weight: 600 !important; }
+    div[data-testid="stTextInput"] input:focus, div[data-testid="stNumberInput"] input:focus { border-color: #0F766E !important; background: white !important; box-shadow: 0 0 0 3px rgba(20,184,166,0.18) !important; }
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] > div { border: 1.8px solid #CBD5E1 !important; border-radius: 12px !important; background: #F8FAFC !important; font-weight: 600 !important; }
+    div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:focus-within { border-color: #0F766E !important; box-shadow: 0 0 0 3px rgba(20,184,166,0.18) !important; background: white !important; }
+
+    /* ===== DOWNLOAD BUTTON - ANIMATION ===== */
+    @keyframes pdfPulse { 0% { box-shadow: 0 8px 18px rgba(15,118,110,0.35), 0 0 0 0 rgba(20,184,166,0.45); } 70% { box-shadow: 0 8px 18px rgba(15,118,110,0.35), 0 0 0 12px rgba(20,184,166,0); } 100% { box-shadow: 0 8px 18px rgba(15,118,110,0.35), 0 0 0 0 rgba(20,184,166,0); } }
+    @keyframes pdfShine { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+    div[data-testid="stDownloadButton"] > button { background: linear-gradient(110deg, #0F766E 30%, #14B8A6 50%, #0F766E 70%) !important; background-size: 200% auto !important; color: white !important; border: none !important; border-radius: 50px !important; font-weight: 800 !important; font-size: 17px !important; padding: 16px 20px !important; width: 100% !important; animation: pdfPulse 2s infinite, pdfShine 2.5s linear infinite !important; transition: transform 0.2s ease !important; }
+    div[data-testid="stDownloadButton"] > button:hover { transform: scale(1.02) !important; }
+    div[data-testid="stDownloadButton"] > button:active { transform: scale(0.98) !important; }
+
     .stButton > button { border-radius: 50px !important; font-weight: 700 !important; padding: 14px 20px !important; font-size: 16px !important; border: none !important; box-shadow: 0 8px 18px rgba(0,0,0,0.15) !important; }
     div[data-testid="stButton"] button[kind="primary"] { background: linear-gradient(135deg, #0F766E, #14B8A6) !important; color: white !important; font-size: 19px !important; padding: 16px !important; width: 100%; }
     .footer { text-align: center; color: #94A3B8; font-size: 12px; margin-top: 22px; }
@@ -367,29 +382,26 @@ if image is not None:
 
         st.markdown("---")
 
-        # ===== PROFESSIONAL + OPTIONAL PATIENT FORM =====
+        # ===== PROFESSIONAL + OPTIONAL - AB PROPER US ENGLISH MEIN =====
         st.markdown("""
         <div class="patient-box">
             <div class="patient-header">
                 <span class="patient-title">📝 Patient Details</span>
                 <span class="optional-badge">OPTIONAL</span>
             </div>
-            <div class="patient-sub">Ye form <b>Optional</b> hai. Agar aap chahein to apna naam aur age likh dein, wo PDF Report me aa jayega. <b>Agar nahi likhna to khaali chhor dein, phir bhi Report ban jayegi.</b></div>
+            <div class="patient-sub">This form is <b>completely optional</b>. If you want your name and age to appear on the PDF report, please fill it in. <b>If you leave it blank, your report will still be generated without any problem.</b></div>
         """, unsafe_allow_html=True)
         pc1, pc2 = st.columns(2)
         with pc1:
-            patient_name_input = st.text_input("Patient Name (Optional)", value="", placeholder="e.g. Abdul Rehman")
+            patient_name_input = st.text_input("Patient Name (Optional)", value="", placeholder="e.g. John Smith")
         with pc2:
-            patient_age_input = st.number_input("Age - Years (Optional)", min_value=1, max_value=120, value=None, placeholder="e.g. 22")
+            patient_age_input = st.number_input("Age in Years (Optional)", min_value=1, max_value=120, value=None, placeholder="e.g. 25")
         patient_gender_input = st.selectbox("Gender (Optional)", ["Prefer not to say", "Male", "Female", "Other"])
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # BACKEND - Sab Optional hai, khaali ho to Not Provided jayega
         final_name = patient_name_input.strip() if patient_name_input and patient_name_input.strip() != "" else "Not Provided"
         final_age = str(int(patient_age_input)) if patient_age_input is not None else "Not Provided"
         final_gender = patient_gender_input if patient_gender_input != "Prefer not to say" else "Not Provided"
-
-        # File name ke liye - agar naam nahi hai to simple naam
         file_suffix = final_name.replace(" ", "_") if final_name != "Not Provided" else "Report"
         pdf_buffer = create_pdf_report(result, conf, risk, final_name, final_age, final_gender)
         st.download_button("⬇️ Download PDF Report", data=pdf_buffer, file_name=f"SkinSense_{file_suffix}.pdf", mime="application/pdf", use_container_width=True)
