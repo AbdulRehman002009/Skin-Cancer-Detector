@@ -2,4 +2,5 @@ streamlit
 tensorflow
 pillow
 numpy
-fpdf2
+reportlab
+requests
