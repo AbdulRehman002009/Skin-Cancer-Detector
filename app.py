@@ -18,6 +18,7 @@ try:
     st.success("Model loaded successfully!")
 except Exception as e:
     st.error(f"Error loading model: {e}")
+    st.stop()
 
 uploaded_file = st.file_uploader("Choose a skin lesion image...", type=["jpg", "jpeg", "png"])
 
@@ -28,21 +29,16 @@ if uploaded_file is not None:
     # Preprocess image to match the model's training parameters (128x128)
     resized_image = image.resize((128, 128))
     img_array = np.array(resized_image) / 255.0
-    
-    # Add batch dimension if RGB
-    if True:
-        img_array = np.expand_dims(img_array, axis=0)
+    img_array = np.expand_dims(img_array, axis=0)
         
-        if st.button('Predict'):
-            with st.spinner('Analyzing...'):
-                prediction = model.predict(img_array)[0][0]
-                
-            # Class mapping: {'benign': 0, 'malignant': 1}
-            if prediction > 0.5:
-                confidence = prediction * 100
-                st.error(f"**Prediction: Malignant** (Confidence: {confidence:.2f}%)")
-            else:
-                confidence = (1 - prediction) * 100
-                st.success(f"**Prediction: Benign** (Confidence: {confidence:.2f}%)")
-    else:
-        st.warning("Please upload a valid RGB color image.")
+    if st.button('Predict'):
+        with st.spinner('Analyzing...'):
+            prediction = model.predict(img_array)[0][0]
+            
+        # Class mapping: {'benign': 0, 'malignant': 1}
+        if prediction > 0.5:
+            confidence = prediction * 100
+            st.error(f"**Prediction: Malignant** (Confidence: {confidence:.2f}%)")
+        else:
+            confidence = (1 - prediction) * 100
+            st.success(f"**Prediction: Benign** (Confidence: {confidence:.2f}%)")
