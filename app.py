@@ -4,6 +4,7 @@ from PIL import Image
 import numpy as np
 import io
 from datetime import datetime
+import streamlit.components.v1 as components
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
@@ -31,6 +32,8 @@ if "risk" not in st.session_state:
     st.session_state.risk = ""
 if "show_download" not in st.session_state:
     st.session_state.show_download = False
+if "go_top" not in st.session_state:
+    st.session_state.go_top = False
 
 # =====================================================
 # --- PDF - LOGO FIXED INSIDE HEADER ---
@@ -210,6 +213,8 @@ def create_pdf_report(result, confidence, risk, patient_name="Not Provided", age
 
 st.markdown("""
 <style>
+    html, body { scroll-behavior: smooth !important; }
+    * { scroll-behavior: smooth !important; }
     header[data-testid="stHeader"] { visibility: hidden !important; height: 0px !important; }
     div[data-testid="stToolbar"] { visibility: hidden !important; height: 0px !important; }
     div[data-testid="stDecoration"] { visibility: hidden !important; height: 0px !important; }
@@ -219,7 +224,6 @@ st.markdown("""
     .stAppDeployButton { display: none !important; }
     button[kind="header"] { display: none !important; }
 
-    /* ===== PROFESSIONAL ANIMATIONS - HALKI WALI ===== */
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes popIn { 0% { opacity: 0; transform: scale(0.92); } 100% { opacity: 1; transform: scale(1); } }
     @keyframes softGlow { 0%,100% { box-shadow: 0 15px 30px rgba(0,0,0,0.22); } 50% { box-shadow: 0 15px 35px rgba(20,184,166,0.35); } }
@@ -283,6 +287,34 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Smooth scroll trigger - jab go_top True ho to ahista upar jao
+if st.session_state.go_top:
+    components.html("""
+    <script>
+    setTimeout(function(){
+        try{
+            var doc = window.parent.document;
+            var start = doc.documentElement.scrollTop || doc.body.scrollTop || window.parent.scrollY || 0;
+            var startTime = null;
+            function animate(t){
+                if(!startTime) startTime = t;
+                var p = Math.min((t - startTime) / 800, 1);
+                var ease = 1 - Math.pow(1 - p, 3);
+                var y = start * (1 - ease);
+                window.parent.scrollTo(0, y);
+                doc.documentElement.scrollTop = y;
+                doc.body.scrollTop = y;
+                if(p < 1) requestAnimationFrame(animate);
+            }
+            requestAnimationFrame(animate);
+        }catch(e){
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+    }, 150);
+    </script>
+    """, height=0)
+    st.session_state.go_top = False
+
 st.markdown(f"""
 <div class="header-box">
     <div class="logo-circle">
@@ -339,6 +371,7 @@ with eb1:
         st.session_state.analysis_done = False
         st.session_state.show_download = False
         st.session_state.uploader_key += 1
+        st.session_state.go_top = True
         st.rerun()
 with eb2:
     if st.button("ℹ️ How It Works", use_container_width=True):
@@ -440,6 +473,7 @@ if image is not None:
             st.session_state.analysis_done = False
             st.session_state.show_download = False
             st.session_state.uploader_key += 1
+            st.session_state.go_top = True
             st.rerun()
 
 st.markdown(f"""
