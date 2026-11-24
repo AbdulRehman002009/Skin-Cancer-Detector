@@ -231,23 +231,30 @@ st.markdown("""
     @keyframes gentlePulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     .main { background-color: #F8FAFC; }
-    .header-box { background: linear-gradient(135deg, #020617 0%, #0F766E 60%, #14B8A6 100%); padding: 32px 25px 26px 25px; border-radius: 22px; color: white; text-align: center; margin-bottom: 12px; animation: fadeInUp 0.6s ease both, softGlow 4s ease-in-out infinite; }
-    .logo-circle { background: white; width: 82px; height: 82px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; animation: gentlePulse 3s ease-in-out infinite; }
-    .header-box h1 { color: white !important; font-size: 40px; margin: 0; }
+
+    /* --- HEADER COMPACT - NEW --- */
+    .header-box { background: linear-gradient(135deg, #020617 0%, #0F766E 60%, #14B8A6 100%); padding: 20px 18px 18px 18px; border-radius: 20px; color: white; text-align: center; margin-bottom: 10px; animation: fadeInUp 0.6s ease both, softGlow 4s ease-in-out infinite; }
+    .logo-circle { background: white; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px auto; animation: gentlePulse 3s ease-in-out infinite; }
+    .header-box h1 { color: white !important; font-size: 32px !important; margin: 0; line-height: 1.1; }
     .header-box h1 span { color: #5EEAD4; }
-    .header-box p { color: #CCFBF1 !important; font-size: 15px; margin-top: 6px; }
-    .badge-green { background: #22C55E; color: white; padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; }
-    .badge-white { background: rgba(255,255,255,0.16); color: white; padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3); }
-    .dev-badge { background: #F59E0B; color: #1A1A1A; padding: 8px 18px; border-radius: 50px; font-size: 13px; font-weight: 800; display: inline-block; margin-top: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-    .trust-line { background: white; border: 1px solid #E2E8F0; border-radius: 12px; padding: 10px 12px; text-align: center; font-size: 12.5px; font-weight: 700; color: #0F172A; margin-bottom: 18px; box-shadow: 0 3px 10px rgba(0,0,0,0.04); animation: fadeInUp 0.6s ease 0.1s both; }
+    .header-box p { color: #CCFBF1 !important; font-size: 13.5px; margin-top: 4px; margin-bottom: 0; }
+    .badge-green { background: #22C55E; color: white; padding: 6px 13px; border-radius: 20px; font-size: 11.5px; font-weight: 700; }
+    .badge-white { background: rgba(255,255,255,0.16); color: white; padding: 6px 13px; border-radius: 20px; font-size: 11.5px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3); }
+    .dev-badge { background: #F59E0B; color: #1A1A1A; padding: 7px 16px; border-radius: 50px; font-size: 12.5px; font-weight: 800; display: inline-block; margin-top: 11px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+    .trust-line { background: white; border: 1px solid #E2E8F0; border-radius: 12px; padding: 9px 10px; text-align: center; font-size: 12.5px; font-weight: 700; color: #0F172A; margin-bottom: 14px; box-shadow: 0 3px 10px rgba(0,0,0,0.04); animation: fadeInUp 0.6s ease 0.1s both; }
     .trust-line span { color: #0F766E; }
     .trust-line i { color: #94A3B8; font-style: normal; padding: 0 6px; }
-    .feature-box { background: white; padding: 18px 6px; border-radius: 16px; text-align: center; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); min-height: 115px; transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeInUp 0.6s ease both; }
+
+    /* --- FEATURE BOX 2x2 - NEW --- */
+    .feature-box { background: white; padding: 16px 8px; border-radius: 16px; text-align: center; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); min-height: 108px; transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeInUp 0.6s ease both; }
     .feature-box:hover { transform: translateY(-5px); box-shadow: 0 12px 22px rgba(15,118,110,0.18); border-color: #99F6E4; }
     .feature-box b { font-size: 14px; color: #0F172A; }
-    .feature-box p { font-size: 11px; color: #64748B; margin: 3px 0 0 0; line-height: 1.3; }
-    [data-testid="stFileUploader"] { background: white; border: 2.5px dashed #14B8A6 !important; border-radius: 18px !important; padding: 18px 18px 14px 18px !important; margin-top: 18px; animation: fadeInUp 0.5s ease both; }
-    [data-testid="stFileUploaderDropzone"] button { background: #0F766E !important; color: white !important; border-radius: 14px !important; padding: 14px 20px !important; font-weight: 700 !important; font-size: 16px !important; border: none !important; width: 100% !important; }
+    .feature-box p { font-size: 11.5px; color: #64748B; margin: 3px 0 0 0; line-height: 1.3; }
+    .feature-row { margin-bottom: 10px; }
+
+    [data-testid="stFileUploader"] { background: white; border: 2.5px dashed #14B8A6 !important; border-radius: 18px !important; padding: 16px 16px 12px 16px !important; margin-top: 14px; animation: fadeInUp 0.5s ease both; }
+    [data-testid="stFileUploaderDropzone"] button { background: #0F766E !important; color: white !important; border-radius: 14px !important; padding: 13px 20px !important; font-weight: 700 !important; font-size: 15px !important; border: none !important; width: 100% !important; }
     [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] { display: flex !important; align-items: center !important; gap: 8px !important; width: 100% !important; }
     [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] button { width: auto !important; min-width: 36px !important; height: 36px !important; padding: 0px 8px !important; border-radius: 50% !important; flex-shrink: 0 !important; background: #F1F5F9 !important; color: #0F172A !important; border: 1px solid #E2E8F0 !important; }
     button[data-testid="stFileUploaderDeleteBtn"] { width: 36px !important; min-width: 36px !important; background: #FEE2E2 !important; color: #DC2626 !important; }
@@ -280,6 +287,8 @@ st.markdown("""
     div[data-testid="stButton"] button[kind="primary"] { background: linear-gradient(135deg, #0F766E, #14B8A6) !important; color: white !important; font-size: 19px !important; padding: 16px !important; width: 100%; animation: gentlePulse 2.5s ease-in-out infinite; }
     .footer { text-align: center; color: #94A3B8; font-size: 12px; margin-top: 22px; }
     .footer b { color: #0F766E; font-size: 14px; }
+    /* Gap fix for Clear / How buttons */
+    .action-gap { height: 6px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -313,7 +322,7 @@ if st.session_state.go_top:
 st.markdown(f"""
 <div class="header-box">
     <div class="logo-circle">
-        <svg width="62" height="62" viewBox="0 0 64 64" fill="none">
+        <svg width="52" height="52" viewBox="0 0 64 64" fill="none">
           <circle cx="32" cy="32" r="30" fill="#F0FDF9" stroke="#14B8A6" stroke-width="2"/>
           <rect x="18" y="6" width="28" height="9" rx="4.5" fill="#0F766E"/>
           <circle cx="32" cy="10.5" r="2" fill="white"/>
@@ -337,11 +346,16 @@ st.markdown(f"""
 <div class="trust-line">⭐ Trusted by <span>1000+ Users</span> <i>|</i> 🎯 <span>97% Accuracy</span> <i>|</i> ⚡ <span>Instant Report</span></div>
 """, unsafe_allow_html=True)
 
-c1, c2, c3, c4 = st.columns(4)
+# --- FEATURE BOX 2x2 - NEW LAYOUT ---
+c1, c2 = st.columns(2)
 with c1:
     st.markdown('<div class="feature-box"><div style="font-size:26px;">🔍</div><b>Early Detection</b><p>Detect at Early Stage</p></div>', unsafe_allow_html=True)
 with c2:
     st.markdown('<div class="feature-box"><div style="font-size:26px;">🧠</div><b>Smart AI</b><p>Deep Learning CNN</p></div>', unsafe_allow_html=True)
+
+st.markdown('<div class="feature-row"></div>', unsafe_allow_html=True)
+
+c3, c4 = st.columns(2)
 with c3:
     st.markdown('<div class="feature-box"><div style="font-size:26px;">🛡️</div><b>Safe & Private</b><p>Your Data Stays Private</p></div>', unsafe_allow_html=True)
 with c4:
@@ -366,6 +380,8 @@ except Exception as e:
     st.stop()
 
 uploaded_file = st.file_uploader("📸 Upload Skin Lesion Image", type=["jpg", "jpeg", "png"], key=f"uploader_{st.session_state.uploader_key}")
+
+st.markdown('<div class="action-gap"></div>', unsafe_allow_html=True)
 
 eb1, eb2 = st.columns(2)
 with eb1:
