@@ -487,5 +487,3 @@ st.markdown(f"""
 </div>
 <div class="footer">Made with ❤️ by <b>{DEVELOPER_NAME}</b><br><b>Skin Cancer Detector</b> | Early Detection Saves Lives • Final Year Project</div>
 """, unsafe_allow_html=True)
-
-ya mana ik model banaya ha us ka app.py code ha yar is ma ma pic upload karna ka bad analyze karta hu toh result ma time lagta ha pdf ma b time lagta ha is time ko khatam karo quick hona chahiya
