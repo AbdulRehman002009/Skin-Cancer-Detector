@@ -18,13 +18,6 @@ DEVELOPER_NAME = "Abdul Rehman"
 
 st.set_page_config(page_title=f"Skin Cancer Detector - by {DEVELOPER_NAME}", page_icon="👁️", layout="centered")
 
-# ===== SPEED FIX 1: TF ko fast mode par lagao =====
-tf.config.optimizer.set_jit(False)
-try:
-    tf.config.experimental.set_memory_growth(tf.config.list_physical_devices('GPU')[0], True)
-except:
-    pass
-
 if "uploader_key" not in st.session_state:
     st.session_state.uploader_key = 0
 if "show_how" not in st.session_state:
@@ -37,15 +30,15 @@ if "conf" not in st.session_state:
     st.session_state.conf = 0
 if "risk" not in st.session_state:
     st.session_state.risk = ""
-if "pdf_ready" not in st.session_state:
-    st.session_state.pdf_ready = False
-if "pdf_bytes" not in st.session_state:
-    st.session_state.pdf_bytes = None
 if "go_top" not in st.session_state:
     st.session_state.go_top = False
+if "pdf_cache_key" not in st.session_state:
+    st.session_state.pdf_cache_key = ""
+if "pdf_bytes" not in st.session_state:
+    st.session_state.pdf_bytes = None
 
 # =====================================================
-# --- PDF - LOGO FIXED INSIDE HEADER ---
+# --- PDF ---
 # =====================================================
 def draw_logo_on_pdf(c):
     x = 28
@@ -107,7 +100,6 @@ def create_pdf_report(result, confidence, risk, patient_name="Not Provided", age
     sDisc = ParagraphStyle('Disc', fontName='Helvetica', fontSize=8, leading=11, textColor=GREY, alignment=TA_CENTER)
     sPatientLabel = ParagraphStyle('PL', fontName='Helvetica-Bold', fontSize=9, leading=11, textColor=HexColor("#0F766E"), alignment=TA_LEFT)
     sPatientValue = ParagraphStyle('PV', fontName='Helvetica-Bold', fontSize=11, leading=14, textColor=BLACK, alignment=TA_LEFT)
-
     header_data = [
         [Paragraph("Skin Cancer Detector", sTitle)],
         [Paragraph("Early Skin Cancer Detection &nbsp;|&nbsp; Benign vs Malignant &nbsp;|&nbsp; Powered by Deep Learning", sSub)],
@@ -354,11 +346,9 @@ with c3:
 with c4:
     st.markdown('<div class="feature-box"><div style="font-size:26px;">📄</div><b>PDF Report</b><p>Download PDF Report</p></div>', unsafe_allow_html=True)
 
-# ===== SPEED FIX 2: Model ek dafa load + warm-up =====
 @st.cache_resource
 def load_my_model():
     m = tf.keras.models.load_model('skin_cancer_cnn_model.keras')
-    # Warm-up: pehli prediction yahin kar lo, user ko wait na karna pare
     dummy = np.zeros((1, 128, 128, 3), dtype=np.float32)
     try:
         m.predict(dummy, verbose=0)
@@ -379,8 +369,8 @@ with eb1:
     if st.button("🗑️ Clear Image", use_container_width=True):
         st.session_state.show_how = False
         st.session_state.analysis_done = False
-        st.session_state.pdf_ready = False
         st.session_state.pdf_bytes = None
+        st.session_state.pdf_cache_key = ""
         st.session_state.uploader_key += 1
         st.session_state.go_top = True
         st.rerun()
@@ -397,27 +387,40 @@ if st.session_state.show_how:
     3️⃣ **Download PDF** - Agar chaho to Download PDF dabao, warna nahi
     """)
 
+# ===== FIX 1: IMAGE INSTANT LOAD - Badi pic ko chota karke dikhao =====
 image = None
-image_source = ""
+preview_image = None
 if uploaded_file is not None:
-    image = Image.open(uploaded_file).convert("RGB")
-    image_source = "Your Uploaded Image"
-
-if image is not None:
-    st.markdown('<div class="image-box">', unsafe_allow_html=True)
-    st.image(image, caption=f'{image_source} - Full View', use_container_width=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # ===== SPEED FIX 3: Image pehle se ready rakho, har rerun par dobara na banao =====
-    if "cached_img_array" not in st.session_state or st.session_state.get("last_file") != uploaded_file.name:
-        resized = image.resize((128, 128))
+    # File ko ek dafa parho, baar baar nahi
+    file_bytes = uploaded_file.getvalue()
+    # Cache check - agar wahi file hai to dobara process mat karo
+    if st.session_state.get("last_file_name") != uploaded_file.name or st.session_state.get("last_file_size") != len(file_bytes):
+        orig = Image.open(io.BytesIO(file_bytes)).convert("RGB")
+        # Preview ke liye choti image - 600px se bari nahi
+        preview = orig.copy()
+        preview.thumbnail((600, 600), Image.LANCZOS)
+        # Model ke liye 128x128
+        resized = orig.resize((128, 128))
         img_array = np.array(resized, dtype=np.float32) / 255.0
         img_array = np.expand_dims(img_array, axis=0)
         st.session_state.cached_img_array = img_array
-        st.session_state.last_file = uploaded_file.name
+        st.session_state.cached_preview = preview
+        st.session_state.cached_orig = orig
+        st.session_state.last_file_name = uploaded_file.name
+        st.session_state.last_file_size = len(file_bytes)
+        st.session_state.analysis_done = False
+        st.session_state.pdf_bytes = None
+        st.session_state.pdf_cache_key = ""
+    image = st.session_state.cached_orig
+    preview_image = st.session_state.cached_preview
+
+if preview_image is not None:
+    st.markdown('<div class="image-box">', unsafe_allow_html=True)
+    # Choti preview image dikhao - is liye instant load hogi
+    st.image(preview_image, caption='Your Uploaded Image - Full View', use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     if st.button('🔬 Analyze Now', type="primary", use_container_width=True):
-        # Spinner hataya - ab direct instant result
         prediction = model.predict(st.session_state.cached_img_array, verbose=0)[0][0]
         if prediction > 0.5:
             st.session_state.result = "Malignant"
@@ -428,8 +431,6 @@ if image is not None:
             st.session_state.conf = float((1 - prediction) * 100)
             st.session_state.risk = "Low"
         st.session_state.analysis_done = True
-        st.session_state.pdf_ready = False
-        st.session_state.pdf_bytes = None
         st.rerun()
 
     if st.session_state.analysis_done:
@@ -479,24 +480,21 @@ if image is not None:
         final_gender = patient_gender_input if patient_gender_input != "Prefer not to say" else "Not Provided"
         file_suffix = final_name.replace(" ", "_") if final_name != "Not Provided" else "Report"
 
-        # ===== SPEED FIX 4: PDF sirf jab user dabaye tab banao, har rerun par nahi =====
-        if st.button("📄 Generate PDF Report", use_container_width=True):
+        # ===== FIX 2: SIRF DOWNLOAD PDF REPORT - Generate wala khatam, PDF ek dafa banao aur save rakho =====
+        pdf_key = f"{result}_{conf:.1f}_{final_name}_{final_age}_{final_gender}"
+        if st.session_state.pdf_cache_key != pdf_key or st.session_state.pdf_bytes is None:
             pdf_buffer = create_pdf_report(result, conf, risk, final_name, final_age, final_gender)
             st.session_state.pdf_bytes = pdf_buffer.getvalue()
-            st.session_state.pdf_ready = True
-            st.session_state.pdf_filename = f"Skin_Cancer_Detector_{file_suffix}.pdf"
-            st.rerun()
+            st.session_state.pdf_cache_key = pdf_key
 
-        if st.session_state.pdf_ready and st.session_state.pdf_bytes:
-            st.download_button("⬇️ Download PDF Report", data=st.session_state.pdf_bytes, file_name=st.session_state.get("pdf_filename", "Skin_Cancer_Detector_Report.pdf"), mime="application/pdf", use_container_width=True)
-            st.success("✅ PDF Ready! Upar wale button se download kar lo.")
+        st.download_button("⬇️ Download PDF Report", data=st.session_state.pdf_bytes, file_name=f"Skin_Cancer_Detector_{file_suffix}.pdf", mime="application/pdf", use_container_width=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("🔄 Check Another Image", use_container_width=True):
             st.session_state.show_how = False
             st.session_state.analysis_done = False
-            st.session_state.pdf_ready = False
             st.session_state.pdf_bytes = None
+            st.session_state.pdf_cache_key = ""
             st.session_state.uploader_key += 1
             st.session_state.go_top = True
             st.rerun()
