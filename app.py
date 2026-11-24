@@ -4,6 +4,7 @@ from PIL import Image
 import numpy as np
 import io
 import os
+import time
 from datetime import datetime
 import streamlit.components.v1 as components
 
@@ -35,10 +36,11 @@ if "show_download" not in st.session_state:
     st.session_state.show_download = False
 if "go_top" not in st.session_state:
     st.session_state.go_top = False
+if "analyzing" not in st.session_state:
+    st.session_state.analyzing = False
+if "scroll_to_result" not in st.session_state:
+    st.session_state.scroll_to_result = False
 
-# =====================================================
-# --- PDF - LOGO FIXED INSIDE HEADER ---
-# =====================================================
 def draw_logo_on_pdf(c):
     x = 28
     y = 808
@@ -100,59 +102,29 @@ def create_pdf_report(result, confidence, risk, patient_name="Not Provided", age
     sDisc = ParagraphStyle('Disc', fontName='Helvetica', fontSize=8, leading=11, textColor=GREY, alignment=TA_CENTER)
     sPatientLabel = ParagraphStyle('PL', fontName='Helvetica-Bold', fontSize=9, leading=11, textColor=HexColor("#0F766E"), alignment=TA_LEFT)
     sPatientValue = ParagraphStyle('PV', fontName='Helvetica-Bold', fontSize=11, leading=14, textColor=BLACK, alignment=TA_LEFT)
-
     header_data = [
         [Paragraph("Skin Cancer Detector", sTitle)],
         [Paragraph("Early Skin Cancer Detection &nbsp;|&nbsp; Benign vs Malignant &nbsp;|&nbsp; Powered by Deep Learning", sSub)],
         [Paragraph(f"DEVELOPED BY {DEVELOPER_NAME.upper()} &nbsp;•&nbsp; FINAL YEAR PROJECT", sHeadSmall)],
     ]
     header_table = Table(header_data, colWidths=[210*mm])
-    header_table.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), TEAL_DARK),
-        ('TOPPADDING', (0,0), (-1,0), 18),
-        ('BOTTOMPADDING', (0,-1), (-1,-1), 16),
-        ('LEFTPADDING', (0,0), (-1,-1), 15),
-        ('RIGHTPADDING', (0,0), (-1,-1), 15),
-        ('LINEBELOW', (0,-1), (-1,-1), 4, TEAL),
-    ]))
+    header_table.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,-1), TEAL_DARK),('TOPPADDING', (0,0), (-1,0), 18),('BOTTOMPADDING', (0,-1), (-1,-1), 16),('LEFTPADDING', (0,0), (-1,-1), 15),('RIGHTPADDING', (0,0), (-1,-1), 15),('LINEBELOW', (0,-1), (-1,-1), 4, TEAL),]))
     story.append(header_table)
     story.append(Spacer(1, 7*mm))
     story.append(Paragraph("PATIENT INFORMATION", sSection))
     patient_data = [
-        [Paragraph("PATIENT NAME", sPatientLabel), Paragraph(f"{patient_name}", sPatientValue),
-         Paragraph("AGE", sPatientLabel), Paragraph(f"{age_display}", sPatientValue)],
-        [Paragraph("GENDER", sPatientLabel), Paragraph(f"{gender}", sPatientValue),
-         Paragraph("REPORT ID", sPatientLabel), Paragraph(f"{report_id}", sPatientValue)],
-        [Paragraph("REPORT DATE", sPatientLabel), Paragraph(f"{date_str}", sPatientValue),
-         Paragraph("MODEL", sPatientLabel), Paragraph("CNN | 128 x 128", sPatientValue)],
+        [Paragraph("PATIENT NAME", sPatientLabel), Paragraph(f"{patient_name}", sPatientValue), Paragraph("AGE", sPatientLabel), Paragraph(f"{age_display}", sPatientValue)],
+        [Paragraph("GENDER", sPatientLabel), Paragraph(f"{gender}", sPatientValue), Paragraph("REPORT ID", sPatientLabel), Paragraph(f"{report_id}", sPatientValue)],
+        [Paragraph("REPORT DATE", sPatientLabel), Paragraph(f"{date_str}", sPatientValue), Paragraph("MODEL", sPatientLabel), Paragraph("CNN | 128 x 128", sPatientValue)],
     ]
     patient_table = Table(patient_data, colWidths=[28*mm, 62*mm, 28*mm, 52*mm])
-    patient_table.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), HexColor("#F0FDF9")),
-        ('BOX', (0,0), (-1,-1), 1, TEAL),
-        ('INNERGRID', (0,0), (-1,-1), 0.5, HexColor("#CCFBF1")),
-        ('TOPPADDING', (0,0), (-1,-1), 7),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 7),
-        ('LEFTPADDING', (0,0), (-1,-1), 8),
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-    ]))
+    patient_table.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,-1), HexColor("#F0FDF9")),('BOX', (0,0), (-1,-1), 1, TEAL),('INNERGRID', (0,0), (-1,-1), 0.5, HexColor("#CCFBF1")),('TOPPADDING', (0,0), (-1,-1), 7),('BOTTOMPADDING', (0,0), (-1,-1), 7),('LEFTPADDING', (0,0), (-1,-1), 8),('VALIGN', (0,0), (-1,-1), 'MIDDLE'),]))
     story.append(patient_table)
     story.append(Spacer(1, 6*mm))
     story.append(Paragraph("PREDICTION RESULT", sSection))
-    result_data = [
-        [Paragraph(f"{result_text}", sResult)],
-        [Paragraph(f"Confidence: {confidence:.2f}% &nbsp;&nbsp; | &nbsp;&nbsp; Risk Level: {risk}", sConf)],
-    ]
+    result_data = [[Paragraph(f"{result_text}", sResult)],[Paragraph(f"Confidence: {confidence:.2f}% &nbsp;&nbsp; | &nbsp;&nbsp; Risk Level: {risk}", sConf)],]
     result_table = Table(result_data, colWidths=[170*mm])
-    result_table.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), main_bg),
-        ('BOX', (0,0), (-1,-1), 1.5, main_color),
-        ('TOPPADDING', (0,0), (-1,0), 14),
-        ('BOTTOMPADDING', (0,0), (-1,0), 2),
-        ('TOPPADDING', (0,1), (-1,1), 2),
-        ('BOTTOMPADDING', (0,1), (-1,-1), 14),
-        ('ROUNDEDCORNERS', [8,8,8,8]),
-    ]))
+    result_table.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,-1), main_bg),('BOX', (0,0), (-1,-1), 1.5, main_color),('TOPPADDING', (0,0), (-1,0), 14),('BOTTOMPADDING', (0,0), (-1,0), 2),('TOPPADDING', (0,1), (-1,1), 2),('BOTTOMPADDING', (0,1), (-1,-1), 14),('ROUNDEDCORNERS', [8,8,8,8]),]))
     story.append(result_table)
     story.append(Spacer(1, 6*mm))
     story.append(Paragraph("DETAILED ANALYSIS", sSection))
@@ -170,29 +142,13 @@ def create_pdf_report(result, confidence, risk, patient_name="Not Provided", age
         [Paragraph("Analysis Type", sLabel), Paragraph("Benign vs Malignant Classification", sValue)],
     ]
     detail_table = Table(detail_data, colWidths=[55*mm, 115*mm])
-    detail_table.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (0,-1), HexColor("#F8FAFC")),
-        ('BOX', (0,0), (-1,-1), 0.7, HexColor("#E2E8F0")),
-        ('INNERGRID', (0,0), (-1,-1), 0.5, HexColor("#E2E8F0")),
-        ('TOPPADDING', (0,0), (-1,-1), 8),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
-        ('LEFTPADDING', (0,0), (-1,-1), 10),
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-    ]))
+    detail_table.setStyle(TableStyle([('BACKGROUND', (0,0), (0,-1), HexColor("#F8FAFC")),('BOX', (0,0), (-1,-1), 0.7, HexColor("#E2E8F0")),('INNERGRID', (0,0), (-1,-1), 0.5, HexColor("#E2E8F0")),('TOPPADDING', (0,0), (-1,-1), 8),('BOTTOMPADDING', (0,0), (-1,-1), 8),('LEFTPADDING', (0,0), (-1,-1), 10),('VALIGN', (0,0), (-1,-1), 'MIDDLE'),]))
     story.append(detail_table)
     story.append(Spacer(1, 6*mm))
     story.append(Paragraph("RECOMMENDED ACTION", sSection))
     rec_data = [[Paragraph(f"<b>Analysis Summary:</b> {advice}<br/><b>Next Step:</b> {next_step}", sRec)]]
     rec_table = Table(rec_data, colWidths=[170*mm])
-    rec_table.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), HexColor("#FFFBEB")),
-        ('BOX', (0,0), (-1,-1), 1, ORANGE),
-        ('TOPPADDING', (0,0), (-1,-1), 12),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 12),
-        ('LEFTPADDING', (0,0), (-1,-1), 12),
-        ('RIGHTPADDING', (0,0), (-1,-1), 12),
-        ('ROUNDEDCORNERS', [8,8,8,8]),
-    ]))
+    rec_table.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,-1), HexColor("#FFFBEB")),('BOX', (0,0), (-1,-1), 1, ORANGE),('TOPPADDING', (0,0), (-1,-1), 12),('BOTTOMPADDING', (0,0), (-1,-1), 12),('LEFTPADDING', (0,0), (-1,-1), 12),('RIGHTPADDING', (0,0), (-1,-1), 12),('ROUNDEDCORNERS', [8,8,8,8]),]))
     story.append(rec_table)
     story.append(Spacer(1, 8*mm))
     story.append(HRFlowable(width="100%", thickness=0.5, color=HexColor("#E2E8F0")))
@@ -201,11 +157,7 @@ def create_pdf_report(result, confidence, risk, patient_name="Not Provided", age
     story.append(Spacer(1, 6*mm))
     footer_data = [[Paragraph(f"Skin Cancer Detector &nbsp;|&nbsp; Developed by <b>{DEVELOPER_NAME}</b> &nbsp;|&nbsp; Early Detection Saves Lives", sFooter)]]
     footer_table = Table(footer_data, colWidths=[210*mm])
-    footer_table.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), TEAL),
-        ('TOPPADDING', (0,0), (-1,-1), 10),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 10),
-    ]))
+    footer_table.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,-1), TEAL),('TOPPADDING', (0,0), (-1,-1), 10),('BOTTOMPADDING', (0,0), (-1,-1), 10),]))
     story.append(footer_table)
     def on_page(canvas, doc):
         draw_logo_on_pdf(canvas)
@@ -230,9 +182,8 @@ st.markdown("""
     @keyframes softGlow { 0%,100% { box-shadow: 0 15px 30px rgba(0,0,0,0.22); } 50% { box-shadow: 0 15px 35px rgba(20,184,166,0.35); } }
     @keyframes gentlePulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes blinkDot { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
     .main { background-color: #F8FAFC; }
-
-    /* --- HEADER COMPACT - NEW --- */
     .header-box { background: linear-gradient(135deg, #020617 0%, #0F766E 60%, #14B8A6 100%); padding: 20px 18px 18px 18px; border-radius: 20px; color: white; text-align: center; margin-bottom: 10px; animation: fadeInUp 0.6s ease both, softGlow 4s ease-in-out infinite; }
     .logo-circle { background: white; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px auto; animation: gentlePulse 3s ease-in-out infinite; }
     .header-box h1 { color: white !important; font-size: 32px !important; margin: 0; line-height: 1.1; }
@@ -241,18 +192,14 @@ st.markdown("""
     .badge-green { background: #22C55E; color: white; padding: 6px 13px; border-radius: 20px; font-size: 11.5px; font-weight: 700; }
     .badge-white { background: rgba(255,255,255,0.16); color: white; padding: 6px 13px; border-radius: 20px; font-size: 11.5px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3); }
     .dev-badge { background: #F59E0B; color: #1A1A1A; padding: 7px 16px; border-radius: 50px; font-size: 12.5px; font-weight: 800; display: inline-block; margin-top: 11px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-
     .trust-line { background: white; border: 1px solid #E2E8F0; border-radius: 12px; padding: 9px 10px; text-align: center; font-size: 12.5px; font-weight: 700; color: #0F172A; margin-bottom: 14px; box-shadow: 0 3px 10px rgba(0,0,0,0.04); animation: fadeInUp 0.6s ease 0.1s both; }
     .trust-line span { color: #0F766E; }
     .trust-line i { color: #94A3B8; font-style: normal; padding: 0 6px; }
-
-    /* --- FEATURE BOX 2x2 - NEW --- */
     .feature-box { background: white; padding: 16px 8px; border-radius: 16px; text-align: center; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); min-height: 108px; transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeInUp 0.6s ease both; }
     .feature-box:hover { transform: translateY(-5px); box-shadow: 0 12px 22px rgba(15,118,110,0.18); border-color: #99F6E4; }
     .feature-box b { font-size: 14px; color: #0F172A; }
     .feature-box p { font-size: 11.5px; color: #64748B; margin: 3px 0 0 0; line-height: 1.3; }
     .feature-row { margin-bottom: 10px; }
-
     [data-testid="stFileUploader"] { background: white; border: 2.5px dashed #14B8A6 !important; border-radius: 18px !important; padding: 16px 16px 12px 16px !important; margin-top: 14px; animation: fadeInUp 0.5s ease both; }
     [data-testid="stFileUploaderDropzone"] button { background: #0F766E !important; color: white !important; border-radius: 14px !important; padding: 13px 20px !important; font-weight: 700 !important; font-size: 15px !important; border: none !important; width: 100% !important; }
     [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] { display: flex !important; align-items: center !important; gap: 8px !important; width: 100% !important; }
@@ -285,39 +232,26 @@ st.markdown("""
     .stButton > button { border-radius: 50px !important; font-weight: 700 !important; padding: 14px 20px !important; font-size: 16px !important; border: none !important; box-shadow: 0 8px 18px rgba(0,0,0,0.15) !important; transition: transform 0.25s ease, box-shadow 0.25s ease !important; }
     .stButton > button:hover { transform: translateY(-2px); box-shadow: 0 12px 20px rgba(0,0,0,0.18) !important; }
     div[data-testid="stButton"] button[kind="primary"] { background: linear-gradient(135deg, #0F766E, #14B8A6) !important; color: white !important; font-size: 19px !important; padding: 16px !important; width: 100%; animation: gentlePulse 2.5s ease-in-out infinite; }
+    div[data-testid="stButton"] button[kind="primary"]:disabled { opacity: 0.6 !important; animation: none !important; }
     .footer { text-align: center; color: #94A3B8; font-size: 12px; margin-top: 22px; }
     .footer b { color: #0F766E; font-size: 14px; }
-    /* Gap fix for Clear / How buttons */
     .action-gap { height: 6px; }
+    /* --- NEW: Analyzing Box --- */
+    .analyzing-box { background: #EFF6FF; border: 2px solid #0EA5E9; border-radius: 16px; padding: 16px; text-align: center; margin-top: 14px; animation: popIn 0.3s ease both; }
+    .analyzing-box b { color: #0C4A6E; font-size: 16px; }
+    .analyzing-box p { color: #0369A1; font-size: 13px; margin: 4px 0 0 0; }
+    .dot { animation: blinkDot 1s infinite; font-size: 20px; }
+    .result-anchor { scroll-margin-top: 10px; }
 </style>
 """, unsafe_allow_html=True)
 
 if st.session_state.go_top:
-    components.html("""
-    <script>
-    setTimeout(function(){
-        try{
-            var doc = window.parent.document;
-            var start = doc.documentElement.scrollTop || doc.body.scrollTop || window.parent.scrollY || 0;
-            var startTime = null;
-            function animate(t){
-                if(!startTime) startTime = t;
-                var p = Math.min((t - startTime) / 800, 1);
-                var ease = 1 - Math.pow(1 - p, 3);
-                var y = start * (1 - ease);
-                window.parent.scrollTo(0, y);
-                doc.documentElement.scrollTop = y;
-                doc.body.scrollTop = y;
-                if(p < 1) requestAnimationFrame(animate);
-            }
-            requestAnimationFrame(animate);
-        }catch(e){
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        }
-    }, 150);
-    </script>
-    """, height=0)
+    components.html("""<script>setTimeout(function(){ try{ var doc = window.parent.document; var start = doc.documentElement.scrollTop || doc.body.scrollTop || 0; var startTime=null; function animate(t){ if(!startTime) startTime=t; var p=Math.min((t-startTime)/800,1); var ease=1-Math.pow(1-p,3); var y=start*(1-ease); window.parent.scrollTo(0,y); doc.documentElement.scrollTop=y; doc.body.scrollTop=y; if(p<1) requestAnimationFrame(animate);} requestAnimationFrame(animate);}catch(e){ window.scrollTo({top:0,behavior:'smooth'});} },150);</script>""", height=0)
     st.session_state.go_top = False
+
+if st.session_state.scroll_to_result:
+    components.html("""<script>setTimeout(function(){ try{ var doc = window.parent.document; var el = doc.getElementById('result-anchor'); if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); } else { window.parent.scrollTo({top: document.body.scrollHeight, behavior:'smooth'}); } }catch(e){} },200);</script>""", height=0)
+    st.session_state.scroll_to_result = False
 
 st.markdown(f"""
 <div class="header-box">
@@ -346,15 +280,12 @@ st.markdown(f"""
 <div class="trust-line">⭐ Trusted by <span>1000+ Users</span> <i>|</i> 🎯 <span>97% Accuracy</span> <i>|</i> ⚡ <span>Instant Report</span></div>
 """, unsafe_allow_html=True)
 
-# --- FEATURE BOX 2x2 - NEW LAYOUT ---
 c1, c2 = st.columns(2)
 with c1:
     st.markdown('<div class="feature-box"><div style="font-size:26px;">🔍</div><b>Early Detection</b><p>Detect at Early Stage</p></div>', unsafe_allow_html=True)
 with c2:
     st.markdown('<div class="feature-box"><div style="font-size:26px;">🧠</div><b>Smart AI</b><p>Deep Learning CNN</p></div>', unsafe_allow_html=True)
-
 st.markdown('<div class="feature-row"></div>', unsafe_allow_html=True)
-
 c3, c4 = st.columns(2)
 with c3:
     st.markdown('<div class="feature-box"><div style="font-size:26px;">🛡️</div><b>Safe & Private</b><p>Your Data Stays Private</p></div>', unsafe_allow_html=True)
@@ -380,7 +311,6 @@ except Exception as e:
     st.stop()
 
 uploaded_file = st.file_uploader("📸 Upload Skin Lesion Image", type=["jpg", "jpeg", "png"], key=f"uploader_{st.session_state.uploader_key}")
-
 st.markdown('<div class="action-gap"></div>', unsafe_allow_html=True)
 
 eb1, eb2 = st.columns(2)
@@ -389,12 +319,16 @@ with eb1:
         st.session_state.show_how = False
         st.session_state.analysis_done = False
         st.session_state.show_download = False
+        st.session_state.analyzing = False
         st.session_state.uploader_key += 1
         st.session_state.go_top = True
+        st.toast("🗑️ Image Cleared!", icon="✅")
         st.rerun()
 with eb2:
     if st.button("ℹ️ How It Works", use_container_width=True):
         st.session_state.show_how = not st.session_state.show_how
+        if st.session_state.show_how:
+            st.toast("ℹ️ How It Works Opened", icon="👀")
         st.rerun()
 
 if st.session_state.show_how:
@@ -415,15 +349,34 @@ if image is not None:
     st.markdown('<div class="image-box">', unsafe_allow_html=True)
     st.image(image, caption=f'{image_source} - Full View', use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
-
     resized = image.resize((128, 128))
     img_array = np.array(resized) / 255.0
     img_array = np.expand_dims(img_array, axis=0)
 
-    if st.button('🔬 Analyze Now', type="primary", use_container_width=True):
+    # --- NEW: Analyzing feedback ---
+    if st.session_state.analyzing:
+        st.markdown('<div class="analyzing-box"><b>🔍 AI Analyzing Your Image<span class="dot">...</span></b><p>Please wait, CNN model is checking your skin lesion</p></div>', unsafe_allow_html=True)
+
+    analyze_label = "⏳ Analyzing... Please Wait" if st.session_state.analyzing else "🔬 Analyze Now"
+    if st.button(analyze_label, type="primary", use_container_width=True, disabled=st.session_state.analyzing):
+        st.session_state.analyzing = True
+        st.toast("🔍 Analysis Started...", icon="🧠")
+        st.rerun()
+
+    # Ye part tab chalega jab analyzing True ho - asal prediction yahan hoga
+    if st.session_state.analyzing:
+        progress = st.progress(0, text="🔍 AI is analyzing your image...")
+        status = st.empty()
+        for i in range(0, 101, 20):
+            progress.progress(i, text=f"🔍 Analyzing... {i}%")
+            status.info(f"Step {i//20 + 1}/6: {'Loading Image' if i==0 else 'Resizing to 128x128' if i==20 else 'Running CNN Model' if i==40 else 'Checking Patterns' if i==60 else 'Calculating Confidence' if i==80 else 'Finalizing Result'}...")
+            time.sleep(0.15)
         with st.spinner('Skin Cancer Detector is analyzing...'):
-            prediction = float(model(tf.convert_to_tensor(img_array, dtype=tf.float32),
-                                     training=False).numpy().reshape(-1)[0])
+            prediction = float(model(tf.convert_to_tensor(img_array, dtype=tf.float32), training=False).numpy().reshape(-1)[0])
+        progress.progress(100, text="✅ Analysis Complete!")
+        time.sleep(0.3)
+        progress.empty()
+        status.empty()
         if prediction > 0.5:
             st.session_state.result = "Malignant"
             st.session_state.conf = prediction * 100
@@ -436,16 +389,19 @@ if image is not None:
             st.session_state.pred_value = float(1 - prediction)
         st.session_state.analysis_done = True
         st.session_state.show_download = False
+        st.session_state.analyzing = False
+        st.session_state.scroll_to_result = True
+        st.toast("✅ Analysis Complete!", icon="🎉")
         st.rerun()
 
     if st.session_state.analysis_done:
+        st.markdown('<div id="result-anchor" class="result-anchor"></div>', unsafe_allow_html=True)
         st.markdown("---")
         result = st.session_state.result
         conf = st.session_state.conf
         risk = st.session_state.risk
         bar_color = "#DC2626" if result == "Malignant" else "#16A34A"
         bar_width = f"{conf:.1f}%"
-
         if result == "Malignant":
             st.error(f"### ⚠️ Prediction: Malignant")
             st.write(f"**Risk:** High")
@@ -454,7 +410,6 @@ if image is not None:
             st.success(f"### ✅ Prediction: Benign")
             st.write(f"**Risk:** Low")
             st.info("Analysis Complete: Your skin appears healthy. No signs of malignancy detected.")
-
         st.markdown(f"""
         <div class="conf-box">
             <div class="conf-top"><span>🎯 AI Confidence</span><span style="color:{bar_color};">{conf:.2f}% Confident</span></div>
@@ -462,7 +417,6 @@ if image is not None:
             <div class="conf-sub">Risk Level: <b>{risk}</b> &nbsp;|&nbsp; Model: CNN • 128 x 128</div>
         </div>
         """, unsafe_allow_html=True)
-
         st.markdown("---")
         st.markdown("""
         <div class="patient-box">
@@ -479,13 +433,13 @@ if image is not None:
             patient_age_input = st.number_input("Age in Years (Optional)", min_value=1, max_value=120, value=None, placeholder="e.g. 25")
         patient_gender_input = st.selectbox("Gender (Optional)", ["Prefer not to say", "Male", "Female", "Other"])
         st.markdown("</div>", unsafe_allow_html=True)
-
         final_name = patient_name_input.strip() if patient_name_input and patient_name_input.strip() != "" else "Not Provided"
         final_age = str(int(patient_age_input)) if patient_age_input is not None else "Not Provided"
         final_gender = patient_gender_input if patient_gender_input != "Prefer not to say" else "Not Provided"
         file_suffix = final_name.replace(" ", "_") if final_name != "Not Provided" else "Report"
         pdf_buffer = create_pdf_report(result, conf, risk, final_name, final_age, final_gender)
-        st.download_button("⬇️ Download PDF Report", data=pdf_buffer, file_name=f"Skin_Cancer_Detector_{file_suffix}.pdf", mime="application/pdf", use_container_width=True)
+        if st.download_button("⬇️ Download PDF Report", data=pdf_buffer, file_name=f"Skin_Cancer_Detector_{file_suffix}.pdf", mime="application/pdf", use_container_width=True):
+            st.toast("📄 PDF Report Downloaded!", icon="✅")
 
 st.markdown(f"""
 <div style="background:#E0F2FE; padding:12px; border-radius:12px; margin-top:20px; text-align:center; font-size:12px; color:#0C4A6E;">
