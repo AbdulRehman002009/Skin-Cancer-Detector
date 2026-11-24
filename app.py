@@ -3,6 +3,7 @@ import tensorflow as tf
 from PIL import Image
 import numpy as np
 import io
+import os
 from datetime import datetime
 import streamlit.components.v1 as components
 
@@ -224,13 +225,11 @@ st.markdown("""
     footer { visibility: hidden !important; }
     .stAppDeployButton { display: none !important; }
     button[kind="header"] { display: none !important; }
-
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes popIn { 0% { opacity: 0; transform: scale(0.92); } 100% { opacity: 1; transform: scale(1); } }
     @keyframes softGlow { 0%,100% { box-shadow: 0 15px 30px rgba(0,0,0,0.22); } 50% { box-shadow: 0 15px 35px rgba(20,184,166,0.35); } }
     @keyframes gentlePulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
     .main { background-color: #F8FAFC; }
     .header-box { background: linear-gradient(135deg, #020617 0%, #0F766E 60%, #14B8A6 100%); padding: 32px 25px 26px 25px; border-radius: 22px; color: white; text-align: center; margin-bottom: 12px; animation: fadeInUp 0.6s ease both, softGlow 4s ease-in-out infinite; }
     .logo-circle { background: white; width: 82px; height: 82px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; animation: gentlePulse 3s ease-in-out infinite; }
@@ -240,11 +239,9 @@ st.markdown("""
     .badge-green { background: #22C55E; color: white; padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; }
     .badge-white { background: rgba(255,255,255,0.16); color: white; padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3); }
     .dev-badge { background: #F59E0B; color: #1A1A1A; padding: 8px 18px; border-radius: 50px; font-size: 13px; font-weight: 800; display: inline-block; margin-top: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-
     .trust-line { background: white; border: 1px solid #E2E8F0; border-radius: 12px; padding: 10px 12px; text-align: center; font-size: 12.5px; font-weight: 700; color: #0F172A; margin-bottom: 18px; box-shadow: 0 3px 10px rgba(0,0,0,0.04); animation: fadeInUp 0.6s ease 0.1s both; }
     .trust-line span { color: #0F766E; }
     .trust-line i { color: #94A3B8; font-style: normal; padding: 0 6px; }
-
     .feature-box { background: white; padding: 18px 6px; border-radius: 16px; text-align: center; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); min-height: 115px; transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeInUp 0.6s ease both; }
     .feature-box:hover { transform: translateY(-5px); box-shadow: 0 12px 22px rgba(15,118,110,0.18); border-color: #99F6E4; }
     .feature-box b { font-size: 14px; color: #0F172A; }
@@ -256,13 +253,11 @@ st.markdown("""
     button[data-testid="stFileUploaderDeleteBtn"] { width: 36px !important; min-width: 36px !important; background: #FEE2E2 !important; color: #DC2626 !important; }
     [data-testid="stImage"] img { width: 100% !important; max-height: 420px !important; object-fit: contain !important; border-radius: 14px; background: #F1F5F9; padding: 10px; animation: fadeIn 0.6s ease both; }
     .image-box { background: white; border: 2px solid #CCFBF1; border-radius: 18px; padding: 14px; margin-top: 14px; animation: fadeInUp 0.5s ease both; }
-
     .conf-box { background: white; border: 1px solid #E2E8F0; border-radius: 16px; padding: 16px; margin-top: 12px; animation: popIn 0.45s ease both; }
     .conf-top { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 14px; color: #0F172A; margin-bottom: 8px; }
     .conf-bar-bg { background: #E2E8F0; border-radius: 50px; height: 18px; overflow: hidden; }
     .conf-bar-fill { height: 100%; border-radius: 50px; transition: width 0.8s ease; }
     .conf-sub { font-size: 12px; color: #64748B; margin-top: 8px; text-align: center; }
-
     .patient-box { background: white; border: 1px solid #E2E8F0; border-left: 5px solid #0F766E; border-radius: 16px; padding: 18px 18px 14px 18px; margin-top: 18px; box-shadow: 0 6px 16px rgba(0,0,0,0.06); animation: fadeInUp 0.5s ease both; }
     .patient-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .patient-title { font-size: 16px; font-weight: 800; color: #0F172A; }
@@ -354,8 +349,13 @@ with c4:
 
 @st.cache_resource
 def load_my_model():
-    loaded_model = tf.keras.models.load_model('skin_cancer_cnn_model.keras')
-    # Warm up TensorFlow once at app startup so the first real prediction is faster.
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    model_path = os.path.join(base_dir, "skin_cancer_cnn_model.keras")
+    if not os.path.exists(model_path):
+        st.error("❌ Model file nahi mili! 'skin_cancer_cnn_model.keras' ko app.py wale folder me rakho.")
+        st.write("Folder me ye files hain:", os.listdir(base_dir))
+        st.stop()
+    loaded_model = tf.keras.models.load_model(model_path)
     loaded_model(tf.zeros((1, 128, 128, 3), dtype=tf.float32), training=False)
     return loaded_model
 
@@ -406,7 +406,6 @@ if image is not None:
 
     if st.button('🔬 Analyze Now', type="primary", use_container_width=True):
         with st.spinner('Skin Cancer Detector is analyzing...'):
-            # Direct model call avoids the extra Keras predict() data-pipeline overhead.
             prediction = float(model(tf.convert_to_tensor(img_array, dtype=tf.float32),
                                      training=False).numpy().reshape(-1)[0])
         if prediction > 0.5:
@@ -471,15 +470,6 @@ if image is not None:
         file_suffix = final_name.replace(" ", "_") if final_name != "Not Provided" else "Report"
         pdf_buffer = create_pdf_report(result, conf, risk, final_name, final_age, final_gender)
         st.download_button("⬇️ Download PDF Report", data=pdf_buffer, file_name=f"Skin_Cancer_Detector_{file_suffix}.pdf", mime="application/pdf", use_container_width=True)
-
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("🔄 Check Another Image", use_container_width=True):
-            st.session_state.show_how = False
-            st.session_state.analysis_done = False
-            st.session_state.show_download = False
-            st.session_state.uploader_key += 1
-            st.session_state.go_top = True
-            st.rerun()
 
 st.markdown(f"""
 <div style="background:#E0F2FE; padding:12px; border-radius:12px; margin-top:20px; text-align:center; font-size:12px; color:#0C4A6E;">
