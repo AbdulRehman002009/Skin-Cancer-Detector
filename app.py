@@ -30,15 +30,13 @@ if "conf" not in st.session_state:
     st.session_state.conf = 0
 if "risk" not in st.session_state:
     st.session_state.risk = ""
+if "show_download" not in st.session_state:
+    st.session_state.show_download = False
 if "go_top" not in st.session_state:
     st.session_state.go_top = False
-if "pdf_cache_key" not in st.session_state:
-    st.session_state.pdf_cache_key = ""
-if "pdf_bytes" not in st.session_state:
-    st.session_state.pdf_bytes = None
 
 # =====================================================
-# --- PDF ---
+# --- PDF - LOGO FIXED INSIDE HEADER ---
 # =====================================================
 def draw_logo_on_pdf(c):
     x = 28
@@ -63,6 +61,7 @@ def draw_logo_on_pdf(c):
     c.circle(x+16, y+8, 2.2, stroke=0, fill=1)
     c.restoreState()
 
+@st.cache_data(show_spinner=False)
 def create_pdf_report(result, confidence, risk, patient_name="Not Provided", age="Not Provided", gender="Not Provided"):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=0, bottomMargin=0, leftMargin=0, rightMargin=0)
@@ -100,6 +99,7 @@ def create_pdf_report(result, confidence, risk, patient_name="Not Provided", age
     sDisc = ParagraphStyle('Disc', fontName='Helvetica', fontSize=8, leading=11, textColor=GREY, alignment=TA_CENTER)
     sPatientLabel = ParagraphStyle('PL', fontName='Helvetica-Bold', fontSize=9, leading=11, textColor=HexColor("#0F766E"), alignment=TA_LEFT)
     sPatientValue = ParagraphStyle('PV', fontName='Helvetica-Bold', fontSize=11, leading=14, textColor=BLACK, alignment=TA_LEFT)
+
     header_data = [
         [Paragraph("Skin Cancer Detector", sTitle)],
         [Paragraph("Early Skin Cancer Detection &nbsp;|&nbsp; Benign vs Malignant &nbsp;|&nbsp; Powered by Deep Learning", sSub)],
@@ -210,7 +210,7 @@ def create_pdf_report(result, confidence, risk, patient_name="Not Provided", age
         draw_logo_on_pdf(canvas)
     doc.build(story, onFirstPage=on_page, onLaterPages=on_page)
     buffer.seek(0)
-    return buffer
+    return buffer.getvalue()
 
 st.markdown("""
 <style>
@@ -224,11 +224,13 @@ st.markdown("""
     footer { visibility: hidden !important; }
     .stAppDeployButton { display: none !important; }
     button[kind="header"] { display: none !important; }
+
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes popIn { 0% { opacity: 0; transform: scale(0.92); } 100% { opacity: 1; transform: scale(1); } }
     @keyframes softGlow { 0%,100% { box-shadow: 0 15px 30px rgba(0,0,0,0.22); } 50% { box-shadow: 0 15px 35px rgba(20,184,166,0.35); } }
     @keyframes gentlePulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
     .main { background-color: #F8FAFC; }
     .header-box { background: linear-gradient(135deg, #020617 0%, #0F766E 60%, #14B8A6 100%); padding: 32px 25px 26px 25px; border-radius: 22px; color: white; text-align: center; margin-bottom: 12px; animation: fadeInUp 0.6s ease both, softGlow 4s ease-in-out infinite; }
     .logo-circle { background: white; width: 82px; height: 82px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; animation: gentlePulse 3s ease-in-out infinite; }
@@ -238,9 +240,11 @@ st.markdown("""
     .badge-green { background: #22C55E; color: white; padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; }
     .badge-white { background: rgba(255,255,255,0.16); color: white; padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3); }
     .dev-badge { background: #F59E0B; color: #1A1A1A; padding: 8px 18px; border-radius: 50px; font-size: 13px; font-weight: 800; display: inline-block; margin-top: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
     .trust-line { background: white; border: 1px solid #E2E8F0; border-radius: 12px; padding: 10px 12px; text-align: center; font-size: 12.5px; font-weight: 700; color: #0F172A; margin-bottom: 18px; box-shadow: 0 3px 10px rgba(0,0,0,0.04); animation: fadeInUp 0.6s ease 0.1s both; }
     .trust-line span { color: #0F766E; }
     .trust-line i { color: #94A3B8; font-style: normal; padding: 0 6px; }
+
     .feature-box { background: white; padding: 18px 6px; border-radius: 16px; text-align: center; border: 1px solid #E2E8F0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); min-height: 115px; transition: transform 0.3s ease, box-shadow 0.3s ease; animation: fadeInUp 0.6s ease both; }
     .feature-box:hover { transform: translateY(-5px); box-shadow: 0 12px 22px rgba(15,118,110,0.18); border-color: #99F6E4; }
     .feature-box b { font-size: 14px; color: #0F172A; }
@@ -252,11 +256,13 @@ st.markdown("""
     button[data-testid="stFileUploaderDeleteBtn"] { width: 36px !important; min-width: 36px !important; background: #FEE2E2 !important; color: #DC2626 !important; }
     [data-testid="stImage"] img { width: 100% !important; max-height: 420px !important; object-fit: contain !important; border-radius: 14px; background: #F1F5F9; padding: 10px; animation: fadeIn 0.6s ease both; }
     .image-box { background: white; border: 2px solid #CCFBF1; border-radius: 18px; padding: 14px; margin-top: 14px; animation: fadeInUp 0.5s ease both; }
+
     .conf-box { background: white; border: 1px solid #E2E8F0; border-radius: 16px; padding: 16px; margin-top: 12px; animation: popIn 0.45s ease both; }
     .conf-top { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 14px; color: #0F172A; margin-bottom: 8px; }
     .conf-bar-bg { background: #E2E8F0; border-radius: 50px; height: 18px; overflow: hidden; }
     .conf-bar-fill { height: 100%; border-radius: 50px; transition: width 0.8s ease; }
     .conf-sub { font-size: 12px; color: #64748B; margin-top: 8px; text-align: center; }
+
     .patient-box { background: white; border: 1px solid #E2E8F0; border-left: 5px solid #0F766E; border-radius: 16px; padding: 18px 18px 14px 18px; margin-top: 18px; box-shadow: 0 6px 16px rgba(0,0,0,0.06); animation: fadeInUp 0.5s ease both; }
     .patient-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .patient-title { font-size: 16px; font-weight: 800; color: #0F172A; }
@@ -348,13 +354,10 @@ with c4:
 
 @st.cache_resource
 def load_my_model():
-    m = tf.keras.models.load_model('skin_cancer_cnn_model.keras')
-    dummy = np.zeros((1, 128, 128, 3), dtype=np.float32)
-    try:
-        m.predict(dummy, verbose=0)
-    except:
-        pass
-    return m
+    loaded_model = tf.keras.models.load_model('skin_cancer_cnn_model.keras')
+    # Warm up TensorFlow once at app startup so the first real prediction is faster.
+    loaded_model(tf.zeros((1, 128, 128, 3), dtype=tf.float32), training=False)
+    return loaded_model
 
 try:
     model = load_my_model()
@@ -369,8 +372,7 @@ with eb1:
     if st.button("🗑️ Clear Image", use_container_width=True):
         st.session_state.show_how = False
         st.session_state.analysis_done = False
-        st.session_state.pdf_bytes = None
-        st.session_state.pdf_cache_key = ""
+        st.session_state.show_download = False
         st.session_state.uploader_key += 1
         st.session_state.go_top = True
         st.rerun()
@@ -387,50 +389,38 @@ if st.session_state.show_how:
     3️⃣ **Download PDF** - Agar chaho to Download PDF dabao, warna nahi
     """)
 
-# ===== FIX 1: IMAGE INSTANT LOAD - Badi pic ko chota karke dikhao =====
 image = None
-preview_image = None
+image_source = ""
 if uploaded_file is not None:
-    # File ko ek dafa parho, baar baar nahi
-    file_bytes = uploaded_file.getvalue()
-    # Cache check - agar wahi file hai to dobara process mat karo
-    if st.session_state.get("last_file_name") != uploaded_file.name or st.session_state.get("last_file_size") != len(file_bytes):
-        orig = Image.open(io.BytesIO(file_bytes)).convert("RGB")
-        # Preview ke liye choti image - 600px se bari nahi
-        preview = orig.copy()
-        preview.thumbnail((600, 600), Image.LANCZOS)
-        # Model ke liye 128x128
-        resized = orig.resize((128, 128))
-        img_array = np.array(resized, dtype=np.float32) / 255.0
-        img_array = np.expand_dims(img_array, axis=0)
-        st.session_state.cached_img_array = img_array
-        st.session_state.cached_preview = preview
-        st.session_state.cached_orig = orig
-        st.session_state.last_file_name = uploaded_file.name
-        st.session_state.last_file_size = len(file_bytes)
-        st.session_state.analysis_done = False
-        st.session_state.pdf_bytes = None
-        st.session_state.pdf_cache_key = ""
-    image = st.session_state.cached_orig
-    preview_image = st.session_state.cached_preview
+    image = Image.open(uploaded_file).convert("RGB")
+    image_source = "Your Uploaded Image"
 
-if preview_image is not None:
+if image is not None:
     st.markdown('<div class="image-box">', unsafe_allow_html=True)
-    # Choti preview image dikhao - is liye instant load hogi
-    st.image(preview_image, caption='Your Uploaded Image - Full View', use_container_width=True)
+    st.image(image, caption=f'{image_source} - Full View', use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
+    resized = image.resize((128, 128))
+    img_array = np.array(resized) / 255.0
+    img_array = np.expand_dims(img_array, axis=0)
+
     if st.button('🔬 Analyze Now', type="primary", use_container_width=True):
-        prediction = model.predict(st.session_state.cached_img_array, verbose=0)[0][0]
+        with st.spinner('Skin Cancer Detector is analyzing...'):
+            # Direct model call avoids the extra Keras predict() data-pipeline overhead.
+            prediction = float(model(tf.convert_to_tensor(img_array, dtype=tf.float32),
+                                     training=False).numpy().reshape(-1)[0])
         if prediction > 0.5:
             st.session_state.result = "Malignant"
-            st.session_state.conf = float(prediction * 100)
+            st.session_state.conf = prediction * 100
             st.session_state.risk = "High"
+            st.session_state.pred_value = float(prediction)
         else:
             st.session_state.result = "Benign"
-            st.session_state.conf = float((1 - prediction) * 100)
+            st.session_state.conf = (1 - prediction) * 100
             st.session_state.risk = "Low"
+            st.session_state.pred_value = float(1 - prediction)
         st.session_state.analysis_done = True
+        st.session_state.show_download = False
         st.rerun()
 
     if st.session_state.analysis_done:
@@ -469,32 +459,24 @@ if preview_image is not None:
         """, unsafe_allow_html=True)
         pc1, pc2 = st.columns(2)
         with pc1:
-            patient_name_input = st.text_input("Patient Name (Optional)", value="", placeholder="e.g. John Smith", key="p_name")
+            patient_name_input = st.text_input("Patient Name (Optional)", value="", placeholder="e.g. John Smith")
         with pc2:
-            patient_age_input = st.number_input("Age in Years (Optional)", min_value=1, max_value=120, value=None, placeholder="e.g. 25", key="p_age")
-        patient_gender_input = st.selectbox("Gender (Optional)", ["Prefer not to say", "Male", "Female", "Other"], key="p_gender")
+            patient_age_input = st.number_input("Age in Years (Optional)", min_value=1, max_value=120, value=None, placeholder="e.g. 25")
+        patient_gender_input = st.selectbox("Gender (Optional)", ["Prefer not to say", "Male", "Female", "Other"])
         st.markdown("</div>", unsafe_allow_html=True)
 
         final_name = patient_name_input.strip() if patient_name_input and patient_name_input.strip() != "" else "Not Provided"
         final_age = str(int(patient_age_input)) if patient_age_input is not None else "Not Provided"
         final_gender = patient_gender_input if patient_gender_input != "Prefer not to say" else "Not Provided"
         file_suffix = final_name.replace(" ", "_") if final_name != "Not Provided" else "Report"
-
-        # ===== FIX 2: SIRF DOWNLOAD PDF REPORT - Generate wala khatam, PDF ek dafa banao aur save rakho =====
-        pdf_key = f"{result}_{conf:.1f}_{final_name}_{final_age}_{final_gender}"
-        if st.session_state.pdf_cache_key != pdf_key or st.session_state.pdf_bytes is None:
-            pdf_buffer = create_pdf_report(result, conf, risk, final_name, final_age, final_gender)
-            st.session_state.pdf_bytes = pdf_buffer.getvalue()
-            st.session_state.pdf_cache_key = pdf_key
-
-        st.download_button("⬇️ Download PDF Report", data=st.session_state.pdf_bytes, file_name=f"Skin_Cancer_Detector_{file_suffix}.pdf", mime="application/pdf", use_container_width=True)
+        pdf_buffer = create_pdf_report(result, conf, risk, final_name, final_age, final_gender)
+        st.download_button("⬇️ Download PDF Report", data=pdf_buffer, file_name=f"Skin_Cancer_Detector_{file_suffix}.pdf", mime="application/pdf", use_container_width=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("🔄 Check Another Image", use_container_width=True):
             st.session_state.show_how = False
             st.session_state.analysis_done = False
-            st.session_state.pdf_bytes = None
-            st.session_state.pdf_cache_key = ""
+            st.session_state.show_download = False
             st.session_state.uploader_key += 1
             st.session_state.go_top = True
             st.rerun()
@@ -505,3 +487,5 @@ st.markdown(f"""
 </div>
 <div class="footer">Made with ❤️ by <b>{DEVELOPER_NAME}</b><br><b>Skin Cancer Detector</b> | Early Detection Saves Lives • Final Year Project</div>
 """, unsafe_allow_html=True)
+
+ya mana ik model banaya ha us ka app.py code ha yar is ma ma pic upload karna ka bad analyze karta hu toh result ma time lagta ha pdf ma b time lagta ha is time ko khatam karo quick hona chahiya
